@@ -1,0 +1,364 @@
+/* ============================================================
+   SYNAPSE OS — Animations
+   ============================================================ */
+
+/* --- Scroll Reveal --- */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+}
+
+.reveal-left.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(40px);
+  transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+}
+
+.reveal-right.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.reveal-scale {
+  opacity: 0;
+  transform: scale(0.9);
+  transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+}
+
+.reveal-scale.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Staggered children */
+.reveal-stagger > * {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
+}
+
+.reveal-stagger.visible > *:nth-child(1) { transition-delay: 0.05s; opacity: 1; transform: translateY(0); }
+.reveal-stagger.visible > *:nth-child(2) { transition-delay: 0.1s; opacity: 1; transform: translateY(0); }
+.reveal-stagger.visible > *:nth-child(3) { transition-delay: 0.15s; opacity: 1; transform: translateY(0); }
+.reveal-stagger.visible > *:nth-child(4) { transition-delay: 0.2s; opacity: 1; transform: translateY(0); }
+.reveal-stagger.visible > *:nth-child(5) { transition-delay: 0.25s; opacity: 1; transform: translateY(0); }
+
+/* --- Hero Animations --- */
+.hero-fade-in {
+  animation: heroFadeIn 1.2s var(--ease-out) both;
+}
+
+.hero-fade-in-delayed {
+  animation: heroFadeIn 1.2s var(--ease-out) 0.3s both;
+}
+
+.hero-fade-in-delayed-2 {
+  animation: heroFadeIn 1.2s var(--ease-out) 0.6s both;
+}
+
+.hero-fade-in-delayed-3 {
+  animation: heroFadeIn 1.2s var(--ease-out) 0.9s both;
+}
+
+@keyframes heroFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Glow Pulse --- */
+.glow-pulse {
+  animation: glowPulse 3s ease-in-out infinite;
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px hsla(185, 100%, 55%, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 40px hsla(185, 100%, 55%, 0.25), 0 0 80px hsla(265, 90%, 65%, 0.1);
+  }
+}
+
+/* --- Data Flow Animation --- */
+.data-flow {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-cyan);
+  box-shadow: 0 0 10px var(--color-cyan), 0 0 20px var(--color-cyan);
+  pointer-events: none;
+}
+
+/* --- Typing Cursor --- */
+.typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: var(--color-cyan);
+  margin-left: 2px;
+  animation: cursorBlink 1s step-end infinite;
+  vertical-align: text-bottom;
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+
+/* --- Orbit Animation (for nodes) --- */
+.orbit {
+  animation: orbit 20s linear infinite;
+}
+
+@keyframes orbit {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* --- Gradient Border Animation --- */
+.gradient-border {
+  position: relative;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    var(--gradient-angle, 135deg),
+    var(--color-cyan),
+    var(--color-violet),
+    var(--color-cyan)
+  );
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: gradientRotate 4s linear infinite;
+}
+
+@keyframes gradientRotate {
+  to { --gradient-angle: 495deg; }
+}
+
+@property --gradient-angle {
+  syntax: '<angle>';
+  initial-value: 135deg;
+  inherits: false;
+}
+
+/* --- Scan Line Effect --- */
+.scan-line::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-cyan), transparent);
+  opacity: 0.3;
+  animation: scanLine 4s ease-in-out infinite;
+}
+
+@keyframes scanLine {
+  0%   { top: 0; opacity: 0; }
+  10%  { opacity: 0.3; }
+  90%  { opacity: 0.3; }
+  100% { top: 100%; opacity: 0; }
+}
+
+/* --- Ripple Effect --- */
+.ripple {
+  position: relative;
+  overflow: hidden;
+}
+
+.ripple::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s var(--ease-out), height 0.6s var(--ease-out), opacity 0.6s var(--ease-out);
+  opacity: 0;
+}
+
+.ripple:active::after {
+  width: 300px;
+  height: 300px;
+  opacity: 1;
+  transition: none;
+}
+
+/* --- Number Counter Animation --- */
+.counter-animate {
+  display: inline-block;
+  transition: transform 0.3s var(--ease-spring);
+}
+
+.counter-animate.changed {
+  transform: scale(1.15);
+}
+
+/* --- Background Gradient Animation --- */
+.bg-gradient-animate {
+  background: linear-gradient(
+    -45deg,
+    var(--color-bg-void),
+    var(--color-bg-deep),
+    hsla(230, 30%, 12%, 1),
+    var(--color-bg-void)
+  );
+  background-size: 400% 400%;
+  animation: bgGradient 15s ease infinite;
+}
+
+@keyframes bgGradient {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* --- Notification Badge Bounce --- */
+.badge-bounce {
+  animation: badgeBounce 0.6s var(--ease-spring);
+}
+
+@keyframes badgeBounce {
+  0%   { transform: scale(0); }
+  60%  { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* --- Slide Up Fade --- */
+.slide-up-fade {
+  animation: slideUpFade 0.5s var(--ease-out) both;
+}
+
+@keyframes slideUpFade {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Modal Backdrop --- */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  z-index: var(--z-overlay);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s var(--ease-smooth);
+}
+
+.modal-backdrop.active {
+  display: flex;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* --- Ambient Glow Orbs (background decoration) --- */
+.ambient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  opacity: 0.15;
+}
+
+.ambient-orb--cyan {
+  background: var(--color-cyan);
+}
+
+.ambient-orb--violet {
+  background: var(--color-violet);
+}
+
+.ambient-orb--amber {
+  background: var(--color-amber);
+}
+
+/* --- Line Draw Animation --- */
+.line-draw {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: lineDraw 2s var(--ease-out) forwards;
+}
+
+@keyframes lineDraw {
+  to { stroke-dashoffset: 0; }
+}
+
+/* --- Spinner --- */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border-subtle);
+  border-top-color: var(--color-cyan);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* --- Reduced Motion --- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .reveal,
+  .reveal-left,
+  .reveal-right,
+  .reveal-scale {
+    opacity: 1;
+    transform: none;
+  }
+}

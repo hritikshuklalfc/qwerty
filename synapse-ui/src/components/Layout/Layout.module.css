@@ -1,0 +1,154 @@
+.layoutContainer {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background-color: var(--bg-base);
+}
+
+/* Left Navigation */
+.sidebar {
+  width: 80px;
+  background: var(--card-surface);
+  backdrop-filter: blur(12px);
+  border-right: 1px solid var(--card-border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0;
+  z-index: 10;
+  transition: width 0.3s ease;
+}
+
+.logoArea {
+  margin-bottom: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.navIcon {
+  color: var(--text-tertiary);
+  margin-bottom: 24px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 12px 0;
+}
+
+.navIcon:hover {
+  color: var(--primary-accent);
+  filter: drop-shadow(0 0 8px var(--primary-accent-glow));
+}
+
+.activeIcon {
+  color: var(--primary-accent);
+  filter: drop-shadow(0 0 8px var(--primary-accent-glow));
+}
+
+.spacer {
+  flex-grow: 1;
+}
+
+.agentProfile {
+  margin-top: auto;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: rgba(0, 240, 255, 0.1);
+  border: 1px solid var(--primary-accent);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.agentProfile::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: var(--primary-accent);
+  animation: spin-ring 4s linear infinite;
+}
+
+/* Main Content Area */
+.mainContent {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Top Bar */
+.topbar {
+  height: 64px;
+  background: rgba(10, 10, 11, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--card-border);
+  display: flex;
+  align-items: center;
+  padding: 0 32px;
+  justify-content: space-between;
+  z-index: 10;
+}
+
+.searchBar {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  border-radius: 8px;
+  padding: 8px 16px;
+  width: 300px;
+  transition: all 0.3s ease;
+}
+
+.searchBar:focus-within {
+  border-color: var(--primary-accent);
+  box-shadow: 0 0 0 2px var(--primary-accent-glow);
+}
+
+.searchInput {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  margin-left: 12px;
+  font-family: var(--font-family);
+  width: 100%;
+}
+
+.searchInput::placeholder {
+  color: var(--text-tertiary);
+}
+
+.topActions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.actionIcon {
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.actionIcon:hover {
+  color: var(--primary-accent);
+}
+
+/* Page Container */
+.pageContainer {
+  flex-grow: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 32px;
+  position: relative;
+}

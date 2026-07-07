@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Synapse OS — The Autonomous Multi-Agent Orchestration Layer for Legacy SMEs. A decentralized network of specialized AI Agents that seamlessly integrates into existing business tools.">
+  <meta name="theme-color" content="#0a0c14">
+
+  <title>Synapse OS — Autonomous Multi-Agent Orchestration</title>
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/animations.css">
+</head>
+<body>
+  <div class="app-wrapper">
+
+    <!-- ============================================================
+         TOAST CONTAINER
+         ============================================================ -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- ============================================================
+         NAVIGATION
+         ============================================================ -->
+    <nav class="nav" id="main-nav">
+      <div class="nav__logo">
+        <div class="nav__logo-icon">⚡</div>
+        Synapse<span>OS</span>
+      </div>
+      <ul class="nav__links">
+        <li><a href="#home" class="active">Home</a></li>
+        <li><a href="#how-it-works">How It Works</a></li>
+        <li><a href="#dashboard">Dashboard</a></li>
+        <li><a href="#demo">Live Demo</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+      </ul>
+      <div class="nav__actions">
+        <span class="badge badge-emerald" style="font-size:10px;">
+          <span class="status-dot active" style="width:6px;height:6px;"></span>
+          5 AGENTS ONLINE
+        </span>
+        <button class="btn btn-primary btn-sm" onclick="window.app?.launchDemo()">Launch Demo</button>
+      </div>
+    </nav>
+
+    <!-- ============================================================
+         HERO SECTION
+         ============================================================ -->
+    <section class="hero bg-gradient-animate" id="home">
+      <!-- Particle Background -->
+      <canvas class="hero__canvas" id="hero-canvas"></canvas>
+
+      <!-- Ambient Orbs -->
+      <div class="ambient-orb ambient-orb--cyan" style="width:400px;height:400px;top:20%;left:-10%;"></div>
+      <div class="ambient-orb ambient-orb--violet" style="width:350px;height:350px;bottom:10%;right:-5%;"></div>
+
+      <div class="hero__content">
+        <div class="hero__badge hero-fade-in">
+          <span class="badge badge-cyan" style="padding:6px 16px;font-size:11px;">
+            🚀 AI-FIRST AUTONOMOUS OPERATING SYSTEM
+          </span>
+        </div>
+
+        <h1 class="hero__title hero-fade-in-delayed">
+          <span class="text-gradient">Synapse</span> OS
+          <br>
+          <span style="font-size:0.5em;font-weight:400;color:var(--text-secondary);letter-spacing:0;">
+            The Autonomous Multi-Agent Orchestration Layer
+          </span>
+        </h1>
+
+        <p class="hero__subtitle hero-fade-in-delayed-2">
+          A decentralized swarm of specialized AI agents that seamlessly integrates into your existing tools — 
+          WhatsApp, Excel, legacy ERPs, paper invoices — to run your operations <em>autonomously</em>.
+        </p>
+
+        <div class="hero__actions hero-fade-in-delayed-3">
+          <button class="btn btn-primary btn-lg" onclick="window.app?.launchDemo()">
+            ⚡ Launch Live Demo
+          </button>
+          <button class="btn btn-secondary btn-lg" onclick="window.app?.scrollToDashboard()">
+            📊 View Dashboard
+          </button>
+        </div>
+
+        <div class="hero__stats hero-fade-in-delayed-3">
+          <div class="hero__stat">
+            <div class="hero__stat-value text-gradient" data-target="5" data-suffix="">5</div>
+            <div class="hero__stat-label">AI Agents</div>
+          </div>
+          <div class="hero__stat">
+            <div class="hero__stat-value text-gradient" data-target="847" data-suffix="">847</div>
+            <div class="hero__stat-label">Orders Processed</div>
+          </div>
+          <div class="hero__stat">
+            <div class="hero__stat-value text-gradient" data-target="96" data-suffix="%">96%</div>
+            <div class="hero__stat-label">Autonomous Rate</div>
+          </div>
+          <div class="hero__stat">
+            <div class="hero__stat-value text-gradient" data-target="24" data-suffix="/7">24/7</div>
+            <div class="hero__stat-label">Uptime</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero__scroll-indicator">
+        <span>Scroll to explore</span>
+        <span style="font-size:18px;">↓</span>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         HOW IT WORKS
+         ============================================================ -->
+    <section class="section" id="how-it-works">
+      <div class="container">
+        <div class="section__header reveal">
+          <div class="section__label">How It Works</div>
+          <h2 class="section__title">Three Layers. <span class="text-gradient">Total Autonomy.</span></h2>
+          <p class="section__desc">
+            Synapse OS replaces your fragmented workflow with a unified cognitive engine that ingests, processes, and decides — autonomously.
+          </p>
+        </div>
+
+        <div class="hiw-grid reveal-stagger">
+          <div class="hiw-card glass-panel">
+            <div class="hiw-card__step">01</div>
+            <div class="hiw-card__icon">📸</div>
+            <div class="hiw-card__title">Ingestion Layer</div>
+            <div class="hiw-card__desc">
+              Zero-effort, multi-modal interface. Photograph a paper invoice, receive a WhatsApp message, or import an Excel sheet. 
+              Advanced vision models parse everything instantly.
+            </div>
+            <div style="margin-top:var(--space-4);">
+              <span class="tag">📄 OCR</span>
+              <span class="tag">💬 NLP</span>
+              <span class="tag">📊 Excel</span>
+            </div>
+          </div>
+
+          <div class="hiw-card glass-panel">
+            <div class="hiw-card__step">02</div>
+            <div class="hiw-card__icon">🧠</div>
+            <div class="hiw-card__title">Agentic Swarm</div>
+            <div class="hiw-card__desc">
+              Five cooperative AI agents work in concert. Each specialized — Inventory, Procurement, Finance, Logistics, Pricing — 
+              communicating through the Synapse Core orchestrator.
+            </div>
+            <div style="margin-top:var(--space-4);">
+              <span class="tag">📦 Inventory</span>
+              <span class="tag">🛒 Procurement</span>
+              <span class="tag">💰 Finance</span>
+            </div>
+          </div>
+
+          <div class="hiw-card glass-panel">
+            <div class="hiw-card__step">03</div>
+            <div class="hiw-card__icon">⚡</div>
+            <div class="hiw-card__title">Decision Intelligence</div>
+            <div class="hiw-card__desc">
+              Self-healing supply chain. Dynamic pricing. Autonomous rescheduling. The system doesn't just report problems — 
+              it solves them before you notice.
+            </div>
+            <div style="margin-top:var(--space-4);">
+              <span class="tag">📈 Dynamic Pricing</span>
+              <span class="tag">🔄 Self-Healing</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider-gradient"></div>
+
+    <!-- ============================================================
+         DASHBOARD
+         ============================================================ -->
+    <section class="section dashboard" id="dashboard">
+      <div class="container-lg">
+        <div class="section__header reveal">
+          <div class="section__label">Command Center</div>
+          <h2 class="section__title">Real-Time <span class="text-gradient">Operations Dashboard</span></h2>
+          <p class="section__desc">
+            Monitor every agent, every transaction, every decision — all in real time. 
+            The dashboard that runs your business while you sleep.
+          </p>
+        </div>
+
+        <!-- Dashboard Tabs -->
+        <div class="dashboard__tabs reveal">
+          <button class="dashboard__tab active" data-panel="panel-overview">
+            🏠 Overview
+          </button>
+          <button class="dashboard__tab" data-panel="panel-analytics">
+            📈 Analytics
+          </button>
+          <button class="dashboard__tab" data-panel="panel-agents">
+            🤖 Agent Swarm
+          </button>
+        </div>
+
+        <!-- ── Overview Panel ── -->
+        <div class="dashboard__panel active" id="panel-overview">
+          <!-- KPI Row -->
+          <div class="kpi-row reveal" id="kpi-row">
+            <!-- Rendered by dashboard.js -->
+          </div>
+
+          <!-- Agent Status Grid -->
+          <div class="agent-grid reveal" id="agent-grid">
+            <!-- Rendered by dashboard.js -->
+          </div>
+
+          <!-- Main Dashboard Grid -->
+          <div class="dash-main reveal">
+            <!-- Activity Feed -->
+            <div class="activity-feed glass-panel">
+              <div class="activity-feed__header">
+                <div class="activity-feed__title">
+                  📡 Live Activity Feed
+                </div>
+                <div class="thinking-dots">
+                  <span></span><span></span><span></span>
+                </div>
+              </div>
+              <div class="activity-feed__list" id="activity-list">
+                <div class="activity-item" style="opacity:0.5;">
+                  <div class="activity-item__icon" style="background:hsla(220,20%,95%,0.05);color:var(--text-muted);">⏳</div>
+                  <div class="activity-item__content">
+                    <div class="activity-item__text" style="color:var(--text-muted);">Waiting for agent activity...</div>
+                    <div class="activity-item__time">System initializing</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Supply Health + Approvals -->
+            <div style="display:flex;flex-direction:column;gap:var(--space-6);">
+              <!-- Supply Chain Health -->
+              <div class="supply-health glass-panel">
+                <div class="supply-health__header">
+                  <div class="supply-health__title">🏥 Supply Chain Health</div>
+                  <span class="badge badge-emerald">OPTIMAL</span>
+                </div>
+                <div class="supply-health__gauge" id="supply-health-gauge">
+                  <!-- Rendered by dashboard.js -->
+                </div>
+                <div class="supply-health__metrics" id="supply-metrics">
+                  <!-- Rendered by dashboard.js -->
+                </div>
+              </div>
+
+              <!-- Approval Queue -->
+              <div class="approval-queue glass-panel">
+                <div class="approval-queue__header">
+                  <div class="approval-queue__title">
+                    ✋ Pending Approvals
+                  </div>
+                  <span class="approval-queue__count" id="approval-count">2</span>
+                </div>
+                <div class="approval-queue__list" id="approval-list">
+                  <!-- Rendered by dashboard.js -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Analytics Panel ── -->
+        <div class="dashboard__panel" id="panel-analytics">
+          <div class="kpi-row">
+            <div class="kpi-card glass-card" style="grid-column: span 2;">
+              <div class="chart-panel">
+                <div class="chart-panel__header">
+                  <div class="chart-panel__title">📈 Revenue vs Expenses</div>
+                  <span class="badge badge-cyan">7 Months</span>
+                </div>
+                <div class="chart-container" id="chart-revenue"></div>
+              </div>
+            </div>
+            <div class="kpi-card glass-card" style="grid-column: span 2;">
+              <div class="chart-panel">
+                <div class="chart-panel__header">
+                  <div class="chart-panel__title">📦 Inventory Levels</div>
+                  <span class="badge badge-amber">Live</span>
+                </div>
+                <div class="chart-container" id="chart-inventory"></div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:var(--space-6);">
+            <div class="glass-panel" style="padding:var(--space-6);">
+              <div class="chart-panel__header">
+                <div class="chart-panel__title">🤖 Agent Workload Distribution</div>
+                <span class="badge badge-violet">Real-time</span>
+              </div>
+              <div id="chart-workload" style="margin-top:var(--space-4);"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Agent Swarm Panel ── -->
+        <div class="dashboard__panel" id="panel-agents">
+          <div class="swarm-panel glass-panel glow-pulse reveal-scale">
+            <div class="swarm-panel__header">
+              <div class="swarm-panel__title">
+                🧠 <span class="text-gradient">Agent Swarm Visualization</span>
+              </div>
+              <div style="display:flex;gap:var(--space-2);">
+                <span class="badge badge-cyan">LIVE</span>
+                <span class="badge badge-emerald">5/5 ACTIVE</span>
+              </div>
+            </div>
+            <canvas class="swarm-panel__canvas" id="swarm-canvas"></canvas>
+            <div style="text-align:center;margin-top:var(--space-3);font-size:var(--text-xs);color:var(--text-muted);">
+              Hover over nodes to inspect agents • Data packets show real-time inter-agent communication
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider-gradient"></div>
+
+    <!-- ============================================================
+         INTERACTIVE DEMO
+         ============================================================ -->
+    <section class="section demo-section" id="demo">
+      <div class="container-lg">
+        <div class="section__header reveal">
+          <div class="section__label">Interactive Demo</div>
+          <h2 class="section__title">See the <span class="text-gradient">Agent Swarm</span> in Action</h2>
+          <p class="section__desc">
+            Choose a real-world scenario and watch as specialized AI agents coordinate autonomously 
+            to solve complex business operations — in real time.
+          </p>
+        </div>
+
+        <!-- Scenario Cards -->
+        <div class="demo-scenarios reveal-stagger" id="demo-scenarios">
+          <!-- Rendered by demo-flow.js -->
+        </div>
+
+        <!-- Demo Viewport -->
+        <div class="demo-viewport glass-panel reveal" id="demo-viewport">
+          <div class="demo-viewport__empty">
+            <div class="demo-viewport__empty-icon">⚡</div>
+            <div style="font-size:var(--text-md);font-weight:600;margin-bottom:var(--space-2);">Select a Scenario</div>
+            <div style="color:var(--text-muted);">Choose one of the scenarios above to see the agent swarm in action</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider-gradient"></div>
+
+    <!-- ============================================================
+         ARCHITECTURE
+         ============================================================ -->
+    <section class="section arch-section" id="architecture">
+      <div class="container">
+        <div class="section__header reveal">
+          <div class="section__label">Technical Architecture</div>
+          <h2 class="section__title">Built for <span class="text-gradient">Autonomous Scale</span></h2>
+          <p class="section__desc">
+            A three-tier architecture designed to integrate with any existing business infrastructure — 
+            from WhatsApp to legacy ERPs.
+          </p>
+        </div>
+
+        <div class="arch-grid reveal-stagger">
+          <div class="arch-layer glass-panel">
+            <div class="arch-layer__title" style="color:var(--color-cyan);">
+              📥 Ingestion Layer
+            </div>
+            <div class="arch-layer__items">
+              <div class="arch-layer__item">📷 Vision OCR Engine</div>
+              <div class="arch-layer__item">💬 WhatsApp NLP Parser</div>
+              <div class="arch-layer__item">📊 Excel/CSV Connector</div>
+              <div class="arch-layer__item">🔌 Legacy ERP Bridge</div>
+              <div class="arch-layer__item">📧 Email Processor</div>
+            </div>
+          </div>
+
+          <div class="arch-layer glass-panel" style="border-color:var(--border-medium);">
+            <div class="arch-layer__title" style="color:var(--color-violet);">
+              🧠 Agentic Swarm
+            </div>
+            <div class="arch-layer__items">
+              <div class="arch-layer__item">⚡ Synapse Core Orchestrator</div>
+              <div class="arch-layer__item">📦 Inventory Agent</div>
+              <div class="arch-layer__item">🛒 Procurement Agent</div>
+              <div class="arch-layer__item">💰 Finance Agent</div>
+              <div class="arch-layer__item">🚛 Logistics Agent</div>
+              <div class="arch-layer__item">📊 Pricing Agent</div>
+            </div>
+          </div>
+
+          <div class="arch-layer glass-panel">
+            <div class="arch-layer__title" style="color:var(--color-amber);">
+              ⚡ Decision Layer
+            </div>
+            <div class="arch-layer__items">
+              <div class="arch-layer__item">📈 Dynamic Pricing Engine</div>
+              <div class="arch-layer__item">🔄 Self-Healing Chains</div>
+              <div class="arch-layer__item">👷 Workforce Scheduler</div>
+              <div class="arch-layer__item">🌐 External Data APIs</div>
+              <div class="arch-layer__item">✋ Human-in-the-Loop</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Integration Tags -->
+        <div class="reveal" style="text-align:center;margin-top:var(--space-10);">
+          <div style="font-size:var(--text-xs);color:var(--text-muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:var(--space-4);">
+            Integrates With
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:var(--space-2);justify-content:center;">
+            <span class="tag" style="padding:6px 14px;font-size:12px;">💬 WhatsApp</span>
+            <span class="tag" style="padding:6px 14px;font-size:12px;">📊 Excel / Sheets</span>
+            <span class="tag" style="padding:6px 14px;font-size:12px;">🏭 SAP / Oracle ERP</span>
+            <span class="tag" style="padding:6px 14px;font-size:12px;">📧 Email / SMTP</span>
+            <span class="tag" style="padding:6px 14px;font-size:12px;">📱 Tally / Zoho</span>
+            <span class="tag" style="padding:6px 14px;font-size:12px;">🔌 REST APIs</span>
+            <span class="tag" style="padding:6px 14px;font-size:12px;">📄 Paper → OCR</span>
+            <span class="tag" style="padding:6px 14px;font-size:12px;">🌐 Weather APIs</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================
+         FOOTER
+         ============================================================ -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer__brand">
+          <span class="text-gradient">Synapse</span> OS
+        </div>
+        <p class="footer__desc">
+          The Autonomous Multi-Agent Orchestration Layer. 
+          Turning fragmented business operations into an intelligent, self-healing system.
+        </p>
+        <div class="footer__bottom">
+          Built for the future of autonomous enterprise. © 2024 Synapse OS.
+        </div>
+      </div>
+    </footer>
+
+  </div><!-- .app-wrapper -->
+
+  <!-- ============================================================
+       SCRIPTS
+       ============================================================ -->
+  <script src="js/particles.js"></script>
+  <script src="js/neural-network.js"></script>
+  <script src="js/agent-simulator.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/demo-flow.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

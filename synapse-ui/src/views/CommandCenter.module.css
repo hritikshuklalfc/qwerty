@@ -1,0 +1,187 @@
+.container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  background: linear-gradient(90deg, #FFF 0%, var(--text-secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  color: var(--text-tertiary);
+  font-size: 14px;
+}
+
+.dashboardLayout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-template-rows: auto 1fr;
+  gap: 24px;
+  flex-grow: 1;
+}
+
+.card {
+  background: var(--card-surface);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Charts / Metrics */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.metricBox {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.metricLabel {
+  font-size: 12px;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+}
+
+.metricValue {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--primary-accent);
+  text-shadow: 0 0 16px var(--primary-accent-glow);
+}
+
+.chartPlaceholder {
+  flex-grow: 1;
+  border-bottom: 1px solid var(--text-tertiary);
+  border-left: 1px solid var(--text-tertiary);
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  padding: 16px;
+}
+
+.chartLine {
+  width: 100%;
+  height: 60%;
+  background: linear-gradient(0deg, var(--primary-accent-glow) 0%, transparent 100%);
+  border-top: 2px solid var(--primary-accent);
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.chartLine::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(0, 240, 255, 0.5), transparent);
+  animation: flow-pulse 3s linear infinite;
+}
+
+/* Integrations */
+.integrationsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.integrationItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.integrationName {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.statusIndicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.statusOnline {
+  background-color: var(--secondary-accent);
+  box-shadow: 0 0 8px var(--secondary-accent);
+}
+
+.statusSyncing {
+  background-color: var(--primary-accent);
+  box-shadow: 0 0 8px var(--primary-accent);
+  animation: pulse-bar 1s infinite alternate;
+}
+
+/* Terminal */
+.terminal {
+  grid-column: 1 / -1;
+  background: #050505;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+  padding: 16px;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 13px;
+  overflow-y: auto;
+  position: relative;
+  background-image: 
+    linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.logLine {
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.logTime {
+  color: var(--text-tertiary);
+  margin-right: 12px;
+}
+
+.logSource {
+  color: var(--primary-accent);
+  font-weight: bold;
+  margin-right: 8px;
+}
+
+.logMessage {
+  color: var(--text-secondary);
+}
+
+.logSource.orchestrator { color: var(--alert-accent); }
+.logSource.extractor { color: var(--secondary-accent); }
