@@ -230,7 +230,7 @@ export function SynapseProvider({ children }) {
   // ── Lease CRUD ──
   const addLease = useCallback(async (lease) => {
     if (dbConnected && user) {
-      const { data, error } = await supabase.from('leases').insert([{ ...lease, user_id: user.id }]).select();
+      const { data, error } = await supabase.from('leases').insert([{ ...lease, user_id: (user.uid || user.id) }]).select();
       if (!error && data) {
         setLeases(prev => [...prev, data[0]]);
         addToast('success', 'Lease Added', `${lease.company} added successfully`);
@@ -271,7 +271,7 @@ export function SynapseProvider({ children }) {
   // ── Product CRUD ──
   const addProduct = useCallback(async (product) => {
     if (dbConnected && user) {
-      const { data, error } = await supabase.from('products').insert([{ ...product, user_id: user.id }]).select();
+      const { data, error } = await supabase.from('products').insert([{ ...product, user_id: (user.uid || user.id) }]).select();
       if (!error && data) {
         setProducts(prev => [...prev, data[0]]);
         addToast('success', 'Product Saved', `${product.name || 'Product'} added successfully`);
