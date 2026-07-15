@@ -17,10 +17,11 @@ export default function FramerIndex() {
   }, [navigate]);
 
   return (
-    <div className="w-full h-screen overflow-hidden">
+    <div className="w-full h-screen overflow-hidden" style={{ isolation: 'isolate' }}>
       <iframe 
         src={`/framer/index.html?v=${Date.now()}${session ? '&auth=true' : ''}`}
-        className="w-full h-full border-none m-0 p-0" 
+        className="w-full h-full border-none m-0 p-0 block"
+        style={{ transform: 'translateZ(0)', WebkitTransform: 'translateZ(0)', willChange: 'transform' }}
         title="FramerIndex"
       />
     </div>

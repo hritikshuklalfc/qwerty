@@ -338,11 +338,24 @@ div:has(> a[href*="case-studies"]), div:has(> a[href*="contact"]) { display: non
 
 /* Fix Pricing to top right */
 div:has(> a[href*="#pricing"]) {
-  position: fixed !important;
+  position: absolute !important;
   right: 5vw !important;
   top: 45px !important;
   transform: translateY(-50%) !important;
   z-index: 9999 !important;
+}
+</style>
+
+
+<style id="global-framer-hider">
+a[href*="careers"], a[href*="case-studies"], a[href*="contact"],
+a[href*="privacy-policy"], a[href*="terms-and-conditions"], a[href*="acceptable-use"],
+a[href*="#Book A Call"] {
+    display: none !important;
+}
+div:has(> a[href*="careers"]), div:has(> a[href*="case-studies"]), div:has(> a[href*="contact"]),
+div:has(> a[href*="privacy-policy"]), div:has(> a[href*="terms-and-conditions"]), div:has(> a[href*="acceptable-use"]) {
+    display: none !important;
 }
 </style>
 
@@ -364,6 +377,9 @@ div:has(> a[href*="#pricing"]) {
 </div>
 	<!-- Start of bodyEnd -->
     
+    
+    
     <!-- End of bodyEnd -->
+      
 </body>
 </html>
