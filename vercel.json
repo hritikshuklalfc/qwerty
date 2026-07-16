@@ -1,12 +1,28 @@
+
 {
-  "rewrites": [
-    {
-      "source": "/n8n/:path*",
-      "destination": "https://synapse-os-server-production.up.railway.app/:path*"
+    "services": {
+        "frontend": {
+            "root": ".",
+            "framework": "vite"
+        },
+        "backend": {
+            "root": "backend"
+        }
     },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+    "rewrites": [
+        {
+            "source": "/api(/.*)?",
+            "destination": {
+                "type": "service",
+                "service": "backend"
+            }
+        },
+        {
+            "source": "/(.*)",
+            "destination": {
+                "type": "service",
+                "service": "frontend"
+            }
+        }
+    ]
 }
