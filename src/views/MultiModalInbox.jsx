@@ -1,5 +1,5 @@
-import React, { useState, useRef, useCallback } from 'react';
-import { UploadCloud, LayoutDashboard, Package, ShoppingBag, Truck, Box, CreditCard, Users, Settings, X, CheckCircle2, AlertCircle, Bot, GitBranch, Network } from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { Bot, GitBranch, Settings, X, CheckCircle2, Network } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useSynapse } from '../context/SynapseContext';
 import { useAuth } from '../hooks/useAuth';
@@ -15,213 +15,6 @@ const SidebarItem = ({ icon: Icon, label, active, onClick }) => (
     <span>{label}</span>
   </button>
 );
-
-// ── Tab: Basic Information ──
-const BasicInfoTab = ({ form, onChange }) => (
-  <div className="space-y-6">
-    <div className="grid grid-cols-2 gap-6">
-      <div>
-        <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">Agent Name *</label>
-        <input value={form.name || ''} onChange={e => onChange('name', e.target.value)} className="w-full bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-[8px] px-3 py-2 text-sm text-foreground dark:text-white outline-none focus:shadow-sot-focus transition-shadow" placeholder="e.g. INGESTION-NODE-1" />
-      </div>
-      <div>
-        <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">System ID</label>
-        <input value={form.sku || ''} onChange={e => onChange('sku', e.target.value)} className="w-full bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-[8px] px-3 py-2 text-sm text-foreground dark:text-white outline-none focus:shadow-sot-focus transition-shadow" placeholder="SYS-ID-XXX" />
-      </div>
-      <div>
-        <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">Core Type</label>
-        <select value={form.category || ''} onChange={e => onChange('category', e.target.value)} className="w-full bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-[8px] px-3 py-2 text-sm text-foreground dark:text-white outline-none focus:shadow-sot-focus transition-shadow">
-          <option value="">Select core</option>
-          <option value="extraction">Data Extraction</option>
-          <option value="inference">Logic Inference</option>
-          <option value="action">Action Execution</option>
-          <option value="vision">Vision Processing</option>
-        </select>
-      </div>
-      <div>
-        <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">Host Network</label>
-        <input value={form.brand || ''} onChange={e => onChange('brand', e.target.value)} className="w-full bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-[8px] px-3 py-2 text-sm text-foreground dark:text-white outline-none focus:shadow-sot-focus transition-shadow" placeholder="e.g. Local, Cloud" />
-      </div>
-    </div>
-    <div>
-      <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">Operational Directives</label>
-      <textarea value={form.shortDesc || ''} onChange={e => onChange('shortDesc', e.target.value)} rows={3} className="w-full bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-[8px] px-3 py-2 text-sm text-foreground dark:text-white outline-none focus:shadow-sot-focus transition-shadow resize-none" placeholder="Primary instructions for this node..." />
-    </div>
-  </div>
-);
-
-// ── Tab: Configuration & Limits ──
-const VariationsTab = ({ form, onChange }) => (
-  <div className="space-y-6">
-    <div className="grid grid-cols-3 gap-6">
-      <div>
-        <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">Rate Limit (req/s) *</label>
-        <input type="number" value={form.price || ''} onChange={e => onChange('price', e.target.value)} className="w-full bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-[8px] px-3 py-2 text-sm text-foreground dark:text-white outline-none focus:shadow-sot-focus transition-shadow" placeholder="0" />
-      </div>
-      <div>
-        <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">Timeout (ms)</label>
-        <input type="number" value={form.comparePrice || ''} onChange={e => onChange('comparePrice', e.target.value)} className="w-full bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-[8px] px-3 py-2 text-sm text-foreground dark:text-white outline-none focus:shadow-sot-focus transition-shadow" placeholder="30000" />
-      </div>
-      <div>
-        <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">Retry Count</label>
-        <input type="number" value={form.costPrice || ''} onChange={e => onChange('costPrice', e.target.value)} className="w-full bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-[8px] px-3 py-2 text-sm text-foreground dark:text-white outline-none focus:shadow-sot-focus transition-shadow" placeholder="3" />
-      </div>
-    </div>
-    <div className="grid grid-cols-2 gap-6">
-      <div>
-        <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">Memory Limit (MB)</label>
-        <input type="number" value={form.quantity || ''} onChange={e => onChange('quantity', e.target.value)} className="w-full bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-[8px] px-3 py-2 text-sm text-foreground dark:text-white outline-none focus:shadow-sot-focus transition-shadow" placeholder="512" />
-      </div>
-      <div>
-        <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">Compute Tier</label>
-        <input type="text" value={form.weight || ''} onChange={e => onChange('weight', e.target.value)} className="w-full bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-[8px] px-3 py-2 text-sm text-foreground dark:text-white outline-none focus:shadow-sot-focus transition-shadow" placeholder="T4-Standard" />
-      </div>
-    </div>
-    <div>
-      <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">Enabled Permissions</label>
-      <div className="flex flex-wrap gap-2">
-        {['READ_FS', 'WRITE_FS', 'NET_OUT', 'EXEC', 'DB_READ', 'DB_WRITE'].map(size => (
-          <button
-            key={size}
-            onClick={() => {
-              const sizes = form.sizes || [];
-              const next = sizes.includes(size) ? sizes.filter(s => s !== size) : [...sizes, size];
-              onChange('sizes', next);
-            }}
-            className={`px-3 py-1.5 rounded-[4px] text-xs font-medium border transition-colors ${
-              (form.sizes || []).includes(size) ? 'bg-sot-blue text-white border-sot-blue' : 'bg-white dark:bg-[#111] text-text-secondary dark:text-white/70 border-sot-border dark:border-white/10 hover:bg-sot-gray-light dark:bg-black'
-            }`}
-          >
-            {size}
-          </button>
-        ))}
-      </div>
-    </div>
-  </div>
-);
-
-// ── Tab: Advanced Prompting ──
-const DescriptionsTab = ({ form, onChange }) => (
-  <div className="space-y-6">
-    <div>
-      <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">System Prompt / Persona</label>
-      <textarea value={form.fullDesc || ''} onChange={e => onChange('fullDesc', e.target.value)} rows={8} className="w-full bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-[8px] px-3 py-2 text-sm text-foreground dark:text-white outline-none focus:shadow-sot-focus transition-shadow resize-none" placeholder="You are an expert data extractor..." />
-    </div>
-    <div>
-      <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">Few-Shot Examples</label>
-      <textarea value={form.features || ''} onChange={e => onChange('features', e.target.value)} rows={4} className="w-full bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-[8px] px-3 py-2 text-sm text-foreground dark:text-white outline-none focus:shadow-sot-focus transition-shadow resize-none" placeholder="User: ...\nAssistant: ..." />
-    </div>
-  </div>
-);
-
-// ── Tab: Deployment ──
-const ShippingTab = ({ form, onChange }) => (
-  <div className="space-y-6">
-    <div className="grid grid-cols-2 gap-6">
-      <div>
-        <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">Auto-Scaling Max Replicas</label>
-        <input type="number" value={form.shippingWeight || ''} onChange={e => onChange('shippingWeight', e.target.value)} className="w-full bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-[8px] px-3 py-2 text-sm text-foreground dark:text-white outline-none focus:shadow-sot-focus transition-shadow" placeholder="10" />
-      </div>
-      <div>
-        <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">Idle Shutdown (mins)</label>
-        <input type="number" value={form.processingTime || ''} onChange={e => onChange('processingTime', e.target.value)} className="w-full bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-[8px] px-3 py-2 text-sm text-foreground dark:text-white outline-none focus:shadow-sot-focus transition-shadow" placeholder="15" />
-      </div>
-    </div>
-    <div>
-      <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">Fallback Node ID</label>
-      <input type="text" value={form.returnPolicy || ''} onChange={e => onChange('returnPolicy', e.target.value)} className="w-full bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-[8px] px-3 py-2 text-sm text-foreground dark:text-white outline-none focus:shadow-sot-focus transition-shadow" placeholder="SYS-ID-FALLBACK" />
-    </div>
-    <div className="flex items-center justify-between p-4 bg-white dark:bg-[#111] rounded-[8px] border border-sot-border dark:border-white/10">
-      <div>
-        <div className="text-sm font-semibold text-foreground dark:text-white">Human-in-the-Loop Required</div>
-        <div className="text-xs text-text-secondary dark:text-white/70 mt-1">Require approval for state-mutating actions</div>
-      </div>
-      <button
-        onClick={() => onChange('freeShipping', !form.freeShipping)}
-        className={`w-10 h-5 rounded-full relative cursor-pointer transition-colors ${form.freeShipping ? 'bg-sot-blue' : 'bg-sot-border'}`}
-      >
-        <div className={`absolute top-0.5 w-4 h-4 rounded-full bg-white dark:bg-[#111] shadow-sm transition-all ${form.freeShipping ? 'right-0.5' : 'left-0.5'}`} />
-      </button>
-    </div>
-  </div>
-);
-
-// ── Modularity Tab ──
-const ImagesTab = ({ images, onAddImages, onRemoveImage }) => {
-  const fileInputRef = useRef(null);
-  const [isDragging, setIsDragging] = useState(false);
-
-  const handleFiles = useCallback((files) => {
-    const fileArray = Array.from(files).filter(f => f.type.startsWith('image/'));
-    const promises = fileArray.map(file => new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => resolve({ name: file.name, dataUrl: e.target.result, size: file.size });
-      reader.readAsDataURL(file);
-    }));
-    Promise.all(promises).then(results => onAddImages(results));
-  }, [onAddImages]);
-
-  const handleDrop = useCallback((e) => {
-    e.preventDefault();
-    setIsDragging(false);
-    handleFiles(e.dataTransfer.files);
-  }, [handleFiles]);
-
-  return (
-    <div>
-      <h3 className="text-sm font-semibold text-foreground dark:text-white mb-1">Knowledge Injection</h3>
-      <p className="text-xs text-text-secondary dark:text-white/70 mb-4">Upload contextual documents (PDF/TXT/Images). Click zone or drag files.</p>
-      
-      <div className="grid grid-cols-5 gap-4">
-        {/* Drop Zone */}
-        <div
-          className={`col-span-2 row-span-2 border border-dashed rounded-[8px] flex flex-col items-center justify-center cursor-pointer transition-colors min-h-[220px] ${
-            isDragging ? 'border-sot-blue bg-sot-blue/10' : 'border-sot-border dark:border-white/10 bg-sot-gray-light dark:bg-black hover:bg-gray-100'
-          }`}
-          onClick={() => fileInputRef.current?.click()}
-          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-          onDragLeave={() => setIsDragging(false)}
-          onDrop={handleDrop}
-        >
-          <UploadCloud size={24} className={`mb-3 ${isDragging ? 'text-sot-blue' : 'text-text-tertiary'}`} />
-          <span className="text-sm font-medium text-foreground dark:text-white">Inject Data</span>
-          <span className="text-xs text-text-tertiary mt-1">Max 50MB per file</span>
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            accept="image/*,.pdf,.txt"
-            className="hidden"
-            onChange={(e) => handleFiles(e.target.files)}
-          />
-        </div>
-
-        {/* Uploaded Files */}
-        {images.map((img, idx) => (
-          <div key={idx} className="col-span-1 row-span-1 rounded-[8px] overflow-hidden relative group aspect-square border border-sot-border dark:border-white/10">
-            <img src={img.dataUrl} alt={img.name} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <button
-                onClick={() => onRemoveImage(idx)}
-                className="w-8 h-8 bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-600 transition-colors"
-              >
-                <X size={14} className="text-text-secondary dark:text-white/70 group-hover:text-red-600" />
-              </button>
-            </div>
-          </div>
-        ))}
-
-        {/* Empty Slots */}
-        {Array.from({ length: Math.max(0, 8 - images.length) }).map((_, i) => (
-          <div
-            key={`empty-${i}`}
-            className="col-span-1 row-span-1 bg-sot-gray-light dark:bg-black border border-sot-border dark:border-white/10 rounded-[8px] aspect-square"
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
 
 // ── Agent List View ──
 const ProductListView = ({ products, onDelete }) => (
@@ -337,90 +130,24 @@ const ApprovalsView = () => {
 
 
 // ── Main Component ──
-const TABS = ['Basic config', 'Config details', 'Resource limits', 'Knowledge', 'Directives', 'Deployment'];
 
 const SIDEBAR_ITEMS = [
-  { icon: LayoutDashboard, label: 'Dashboard' },
   { icon: Bot, label: 'Agent Swarms' },
   { icon: GitBranch, label: 'Workflow Canvas' },
   { icon: Settings, label: 'Settings' },
 ];
 
 const MultiModalInbox = () => {
-  const { addProduct, products, deleteProduct, addToast, pendingApprovals } = useSynapse();
+  const { products, deleteProduct, pendingApprovals } = useSynapse();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('Basic config');
   const [activeSidebar, setActiveSidebar] = useState('Agent Swarms');
-  const [form, setForm] = useState({});
-  const [images, setImages] = useState([]);
-  const [errors, setErrors] = useState({});
 
   const pendingCount = pendingApprovals.filter(a => a.status === 'pending').length;
-
-  const handleChange = useCallback((field, value) => {
-    setForm(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) setErrors(prev => ({ ...prev, [field]: null }));
-  }, [errors]);
-
-  const handleAddImages = useCallback((newImages) => {
-    setImages(prev => {
-      const total = [...prev, ...newImages];
-      if (total.length > 10) {
-        addToast('warning', 'Limit Reached', 'Maximum 10 files allowed');
-        return total.slice(0, 10);
-      }
-      addToast('success', 'Injection Active', `${newImages.length} file(s) ingested`);
-      return total;
-    });
-  }, [addToast]);
-
-  const handleRemoveImage = useCallback((idx) => {
-    setImages(prev => prev.filter((_, i) => i !== idx));
-    addToast('info', 'File Purged', 'Data removed from context');
-  }, [addToast]);
-
-  const validate = useCallback(() => {
-    const errs = {};
-    if (!form.name?.trim()) errs.name = 'Node name is required';
-    setErrors(errs);
-    return Object.keys(errs).length === 0;
-  }, [form]);
-
-  const handleSave = useCallback(() => {
-    if (!validate()) {
-      addToast('error', 'Validation Fault', 'Critical parameters missing');
-      setActiveTab('Basic config');
-      return;
-    }
-    addProduct({ ...form, images });
-    setForm({});
-    setImages([]);
-    setActiveSidebar('Agent Swarms');
-  }, [form, images, validate, addProduct, addToast]);
-
-  const handleContinue = useCallback(() => {
-    const currentIdx = TABS.indexOf(activeTab);
-    if (currentIdx < TABS.length - 1) {
-      setActiveTab(TABS[currentIdx + 1]);
-    } else {
-      handleSave();
-    }
-  }, [activeTab, handleSave]);
-
-  const handleCancel = useCallback(() => {
-    setForm({});
-    setImages([]);
-    setErrors({});
-    addToast('info', 'Operation Aborted', 'Node config wiped');
-    setActiveSidebar('Agent Swarms');
-  }, [addToast]);
 
   const handleSidebarClick = (label) => {
     if (label === 'Settings') {
       navigate('/app/settings');
-    } else if (label === 'Dashboard') {
-      setActiveSidebar('Dashboard');
     } else {
       setActiveSidebar(label);
     }
@@ -435,7 +162,7 @@ const MultiModalInbox = () => {
           <button
             key={idx}
             onClick={() => handleSidebarClick(item.label)}
-            className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeSidebar === item.label && activeSidebar !== 'Dashboard' ? 'bg-sot-gray-light dark:bg-black text-sot-blue' : 'text-text-secondary dark:text-white/70 hover:bg-sot-gray-light dark:bg-black'}`}
+            className={`whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeSidebar === item.label ? 'bg-sot-gray-light dark:bg-black text-sot-blue' : 'text-text-secondary dark:text-white/70 hover:bg-sot-gray-light dark:bg-black'}`}
           >
             {item.label}
           </button>
@@ -454,7 +181,7 @@ const MultiModalInbox = () => {
                 <SidebarItem
                   icon={item.icon}
                   label={item.label}
-                  active={activeSidebar === item.label && activeSidebar !== 'Dashboard'}
+                  active={activeSidebar === item.label}
                   onClick={() => handleSidebarClick(item.label)}
                 />
                 {item.label === 'Workflow Canvas' && pendingCount > 0 && (
@@ -489,12 +216,6 @@ const MultiModalInbox = () => {
                 <h1 className="text-2xl font-display font-semibold text-black dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-white dark:via-slate-200 dark:to-cyan-400 mb-1">Agent Swarms</h1>
                 <div className="text-sm text-text-secondary dark:text-white/70">{products.length} Nodes Active</div>
               </div>
-              <button
-                onClick={() => { setActiveSidebar('Dashboard'); setActiveTab('Basic config'); }}
-                className="group relative px-6 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 backdrop-blur-md border border-cyan-400/50 hover:border-cyan-300 text-cyan-100 rounded-xl text-sm font-semibold transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_25px_rgba(6,182,212,0.5)]"
-              >
-                New Node
-              </button>
             </div>
             <ProductListView products={products} onDelete={deleteProduct} />
           </div>
@@ -506,88 +227,6 @@ const MultiModalInbox = () => {
           </div>
         )}
 
-
-
-        {/* Form area */}
-        {activeSidebar === 'Dashboard' && (
-          <div className="flex flex-col h-full z-10 relative bg-white/60 dark:bg-slate-900/40 backdrop-blur-md border-l border-sot-border dark:border-white/10">
-            <div className="px-8 pt-8 pb-4 shrink-0 border-b border-sot-border dark:border-white/10">
-              <h1 className="text-xl font-display font-semibold text-black dark:text-transparent dark:bg-clip-text dark:bg-gradient-to-r dark:from-white dark:via-slate-200 dark:to-cyan-400 mb-1">Node Initialization Matrix</h1>
-              <div className="text-sm text-text-secondary dark:text-white/70 flex gap-2">
-                <span className="cursor-pointer hover:text-foreground dark:text-white transition-colors" onClick={() => setActiveSidebar('Agent Swarms')}>Agent Swarms</span>
-                <span className="text-sot-border">/</span>
-                <span className="text-foreground dark:text-white font-medium">Init Sequence</span>
-              </div>
-            </div>
-            
-            <div className="px-8 border-b border-sot-border dark:border-white/10 bg-transparent">
-              <div className="flex gap-8 overflow-x-auto no-scrollbar">
-                {TABS.map((tab) => (
-                  <div 
-                    key={tab}
-                    onClick={() => setActiveTab(tab)}
-                    className={`py-4 text-sm font-medium cursor-pointer transition-colors relative whitespace-nowrap ${
-                      activeTab === tab ? 'text-sot-blue' : 'text-text-secondary dark:text-white/70 hover:text-foreground dark:text-white'
-                    }`}
-                  >
-                    {tab}
-                    {activeTab === tab && (
-                      <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-sot-blue" />
-                    )}
-                    {tab === 'Basic config' && errors.name && (
-                      <span className="absolute top-4 -right-2 w-1.5 h-1.5 bg-red-500 rounded-full" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex-grow overflow-y-auto p-8 no-scrollbar bg-transparent">
-              <div className="max-w-4xl mx-auto">
-                <div className="bg-white/50 dark:bg-black/30 backdrop-blur-md border border-sot-border dark:border-white/10 rounded-2xl p-8 shadow-sm">
-                  {activeTab === 'Basic config' && <BasicInfoTab form={form} onChange={handleChange} />}
-                  {activeTab === 'Config details' && (
-                    <div className="space-y-6">
-                      <div className="grid grid-cols-2 gap-6">
-                        <div>
-                          <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">Environment</label>
-                          <select value={form.condition || ''} onChange={e => handleChange('condition', e.target.value)} className="w-full bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-[8px] px-3 py-2 text-sm text-foreground dark:text-white outline-none focus:shadow-sot-focus transition-shadow">
-                            <option value="">Select env</option>
-                            <option value="new">Production</option>
-                            <option value="used">Staging</option>
-                            <option value="refurbished">Development</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">Model Endpoint</label>
-                          <input value={form.material || ''} onChange={e => handleChange('material', e.target.value)} className="w-full bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-[8px] px-3 py-2 text-sm text-foreground dark:text-white outline-none focus:shadow-sot-focus transition-shadow" placeholder="e.g. gpt-4-turbo" />
-                        </div>
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium text-text-secondary dark:text-white/70 mb-1.5 block">System Tags</label>
-                        <input value={form.tags || ''} onChange={e => handleChange('tags', e.target.value)} className="w-full bg-white dark:bg-[#111] border border-sot-border dark:border-white/10 rounded-[8px] px-3 py-2 text-sm text-foreground dark:text-white outline-none focus:shadow-sot-focus transition-shadow" placeholder="Comma separated tags" />
-                      </div>
-                    </div>
-                  )}
-                  {activeTab === 'Resource limits' && <VariationsTab form={form} onChange={handleChange} />}
-                  {activeTab === 'Knowledge' && <ImagesTab images={images} onAddImages={handleAddImages} onRemoveImage={handleRemoveImage} />}
-                  {activeTab === 'Directives' && <DescriptionsTab form={form} onChange={handleChange} />}
-                  {activeTab === 'Deployment' && <ShippingTab form={form} onChange={handleChange} />}
-                </div>
-              </div>
-            </div>
-            
-            <div className="px-8 py-4 bg-transparent border-t border-sot-border dark:border-white/10 flex justify-between items-center shrink-0">
-              <button onClick={handleCancel} className="text-sm font-medium text-text-secondary dark:text-white/70 hover:text-foreground dark:text-white transition-colors px-4 py-2">Cancel</button>
-              <div className="flex gap-3">
-                <button onClick={handleSave} className="px-4 py-2 rounded-xl bg-white/50 dark:bg-white/5 border border-sot-border dark:border-white/10 text-sm font-medium text-foreground dark:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors">Save draft</button>
-                <button onClick={handleContinue} className="group relative px-6 py-2 bg-cyan-500/20 hover:bg-cyan-500/30 backdrop-blur-md border border-cyan-400/50 hover:border-cyan-300 text-cyan-100 rounded-xl text-sm font-semibold transition-all duration-300 shadow-[0_0_15px_rgba(6,182,212,0.3)] hover:shadow-[0_0_25px_rgba(6,182,212,0.5)]">
-                  {TABS.indexOf(activeTab) === TABS.length - 1 ? 'Execute Build' : 'Proceed'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
