@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { io as socketIO } from 'socket.io-client';
+import { API_BASE_URL, SOCKET_URL } from '../utils/constants';
 import AgentSimulator from '../engine/AgentSimulator';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
@@ -251,7 +252,7 @@ export function SynapseProvider({ children }) {
   const socketRef = useRef(null);
 
   useEffect(() => {
-    const socket = socketIO('http://localhost:4000', {
+    const socket = socketIO(SOCKET_URL, {
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,
@@ -398,13 +399,7 @@ export function SynapseProvider({ children }) {
     addToast('info', '🟢 LIVE AI Started', `Running real AI scenario: ${scenarioId}`);
 
     try {
-      // Start listening for Socket.IO events first
-      // Since we may not have socket.io-client, use fetch to trigger the scenario
-      // and rely on the Socket.IO events emitted by the backend being received
-      // through a dedicated EventSource or WebSocket connection
-      
-      // For simplicity and reliability: We use fetch + poll Socket.IO events
-      const response = await fetch('http://localhost:4000/api/ai/scenario', {
+      const response = await fetch(`${SOCKET_URL}/api/ai/scenario`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ scenarioId, apiKey }),
@@ -454,7 +449,7 @@ export function SynapseProvider({ children }) {
     addToast('info', '🧠 Custom AI Scenario', 'Agents are analyzing your prompt...');
 
     try {
-      const response = await fetch('http://localhost:4000/api/ai/custom', {
+      const response = await fetch(`${SOCKET_URL}/api/ai/custom`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, apiKey }),

@@ -10,6 +10,7 @@ import {
   MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
+import { API_BASE_URL, OBSERVATORY_URL } from '../utils/constants';
 import { useSynapse } from '../context/SynapseContext';
 import { 
   Play, X, Eye, Activity, Clock, DollarSign, 
@@ -418,7 +419,7 @@ export default function Observatory() {
       {viewMode === 'live' ? (
         <div className="flex-1 w-full h-full bg-transparent overflow-hidden">
           <iframe 
-            src="http://localhost:5175" 
+            src={OBSERVATORY_URL} 
             className="w-full h-full border-none"
             title="Synapse Observatory Live"
           />
