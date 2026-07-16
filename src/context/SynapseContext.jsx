@@ -3,6 +3,7 @@ import { io as socketIO } from 'socket.io-client';
 import AgentSimulator from '../engine/AgentSimulator';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../hooks/useAuth';
+import { BACKEND_URL } from '../utils/constants';
 
 const SynapseContext = createContext(null);
 
@@ -251,7 +252,7 @@ export function SynapseProvider({ children }) {
   const socketRef = useRef(null);
 
   useEffect(() => {
-    const socket = socketIO('http://localhost:4000', {
+    const socket = socketIO(BACKEND_URL, {
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,
@@ -404,7 +405,7 @@ export function SynapseProvider({ children }) {
       // through a dedicated EventSource or WebSocket connection
       
       // For simplicity and reliability: We use fetch + poll Socket.IO events
-      const response = await fetch('http://localhost:4000/api/ai/scenario', {
+      const response = await fetch(`${BACKEND_URL}/api/ai/scenario`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ scenarioId, apiKey }),
@@ -454,7 +455,7 @@ export function SynapseProvider({ children }) {
     addToast('info', '🧠 Custom AI Scenario', 'Agents are analyzing your prompt...');
 
     try {
-      const response = await fetch('http://localhost:4000/api/ai/custom', {
+      const response = await fetch(`${BACKEND_URL}/api/ai/custom`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt, apiKey }),

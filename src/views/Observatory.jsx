@@ -19,6 +19,8 @@ import {
 } from 'lucide-react';
 import styles from './Observatory.module.css';
 
+import LiveSwarmView from '../components/liveswarm/LiveSwarmView';
+
 import { AgentNode } from '../components/observatory/AgentNode';
 import { TimelinePanel } from '../components/observatory/TimelinePanel';
 import { AgentDetailPanel } from '../components/observatory/AgentDetailPanel';
@@ -417,11 +419,7 @@ export default function Observatory() {
       {/* ── Main Content Area ── */}
       {viewMode === 'live' ? (
         <div className="flex-1 w-full h-full bg-transparent overflow-hidden">
-          <iframe 
-            src="http://localhost:5175" 
-            className="w-full h-full border-none"
-            title="Synapse Observatory Live"
-          />
+          <LiveSwarmView />
         </div>
       ) : (
         <div className={`flex-1 relative ${styles.canvas}`}>
