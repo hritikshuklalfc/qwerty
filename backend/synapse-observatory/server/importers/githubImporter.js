@@ -306,15 +306,50 @@ async function previewGitHubRepo(url, branch, subPath) {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'synapse-import-'));
 
   try {
-    // Shallow clone the repo
-    const cloneUrl = url.endsWith('.git') ? url : `${url}.git`;
-    const branchArg = branch ? `--branch ${branch}` : '';
+    // Parse owner/repo from the GitHub URL for tarball download
+    const urlMatch = url.replace(/\.git$/, '').replace(/\/$/, '').match(/github\.com\/([^\/]+)\/([^\/]+)/);
+    if (!urlMatch) {
+      throw new Error('Invalid GitHub URL format. Expected: https://github.com/owner/repo');
+    }
+    const [, owner, repoName] = urlMatch;
+    const targetBranch = branch || 'main';
 
-    console.log(`[GitHub Import] Cloning ${cloneUrl} into ${tempDir}...`);
-    execSync(
-      `git clone --depth 1 ${branchArg} ${cloneUrl} ${tempDir}/repo`,
-      { timeout: 60000, stdio: 'pipe' }
-    );
+    // Use tarball download instead of git clone — works without git installed
+    fs.mkdirSync(path.join(tempDir, 'repo'), { recursive: true });
+    let downloaded = false;
+
+    // Try tarball download (works on Railway/Render/Fly without git)
+    const branchesToTry = [targetBranch];
+    if (targetBranch === 'main') branchesToTry.push('master');
+
+    for (const branchName of branchesToTry) {
+      const tarballUrl = `https://github.com/${owner}/${repoName}/archive/refs/heads/${branchName}.tar.gz`;
+      console.log(`[GitHub Import] Downloading tarball from ${tarballUrl}...`);
+      try {
+        execSync(
+          `curl -sfL "${tarballUrl}" | tar xz --strip-components=1 -C "${tempDir}/repo"`,
+          { timeout: 120000, stdio: 'pipe' }
+        );
+        downloaded = true;
+        console.log(`[GitHub Import] ✅ Tarball extracted (branch: ${branchName})`);
+        break;
+      } catch (dlErr) {
+        console.log(`[GitHub Import] Tarball download failed for branch "${branchName}": ${dlErr.message}`);
+      }
+    }
+
+    // Fallback to git clone if tarball download failed
+    if (!downloaded) {
+      console.log('[GitHub Import] Tarball method failed, falling back to git clone...');
+      // Remove the empty repo dir created above
+      fs.rmSync(path.join(tempDir, 'repo'), { recursive: true, force: true });
+      const cloneUrl = url.endsWith('.git') ? url : `${url}.git`;
+      const branchArg = branch ? `--branch ${branch}` : '';
+      execSync(
+        `git clone --depth 1 ${branchArg} ${cloneUrl} ${tempDir}/repo`,
+        { timeout: 120000, stdio: 'pipe' }
+      );
+    }
 
     const repoDir = subPath
       ? path.join(tempDir, 'repo', subPath)
@@ -330,7 +365,7 @@ async function previewGitHubRepo(url, branch, subPath) {
     // Scan for instrumentation points
     const scan = scanForInstrumentationPoints(repoDir, projectType.language);
 
-    // Clean up the clone (preview only, we'll re-clone on confirm)
+    // Clean up the download (preview only, we'll re-download on confirm)
     fs.rmSync(tempDir, { recursive: true, force: true });
 
     return {
@@ -362,8 +397,8 @@ async function previewGitHubRepo(url, branch, subPath) {
       fs.rmSync(tempDir, { recursive: true, force: true });
     } catch {}
 
-    if (err.message.includes('not found') || err.message.includes('128')) {
-      throw new Error(`Failed to clone repository. Check the URL and make sure it's a public repo.`);
+    if (err.message.includes('not found') || err.message.includes('128') || err.message.includes('curl') || err.message.includes('tar')) {
+      throw new Error(`Failed to download repository. Check the URL and make sure it's a public repo.`);
     }
     throw err;
   }
