@@ -13,7 +13,109 @@ const { execSync, spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const https = require('https');
+const zlib = require('zlib');
 const importJobStore = require('./importJobStore');
+
+// ── Pure Node.js tarball downloader (no curl/tar/git needed) ──
+
+/**
+ * Download a URL via HTTPS, following redirects. Returns a Buffer.
+ */
+function httpsDownload(url, maxRedirects = 5) {
+  return new Promise((resolve, reject) => {
+    if (maxRedirects <= 0) return reject(new Error('Too many redirects'));
+
+    const urlObj = new URL(url);
+    const options = {
+      hostname: urlObj.hostname,
+      path: urlObj.pathname + urlObj.search,
+      headers: { 'User-Agent': 'synapse-observatory/1.0' },
+    };
+
+    https.get(options, (res) => {
+      if (res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 307) {
+        return resolve(httpsDownload(res.headers.location, maxRedirects - 1));
+      }
+      if (res.statusCode !== 200) {
+        res.resume(); // drain
+        return reject(new Error(`HTTP ${res.statusCode} for ${url}`));
+      }
+
+      const chunks = [];
+      res.on('data', (chunk) => chunks.push(chunk));
+      res.on('end', () => resolve(Buffer.concat(chunks)));
+      res.on('error', reject);
+    }).on('error', reject);
+  });
+}
+
+/**
+ * Decompress a .tar.gz buffer and extract files to destDir.
+ * Equivalent to `tar xz --strip-components=1 -C destDir`.
+ * Uses only Node.js built-in modules (zlib for gzip, manual tar parsing).
+ */
+async function extractTarGz(gzBuffer, destDir) {
+  // Decompress gzip → raw tar
+  const tarData = await new Promise((resolve, reject) => {
+    zlib.gunzip(gzBuffer, (err, data) => (err ? reject(err) : resolve(data)));
+  });
+
+  const BLOCK = 512;
+  let offset = 0;
+
+  while (offset + BLOCK <= tarData.length) {
+    const header = tarData.subarray(offset, offset + BLOCK);
+    offset += BLOCK;
+
+    // End-of-archive marker (two consecutive zero blocks)
+    if (header[0] === 0) break;
+
+    // Parse filename (UStar: prefix field at 345-500 + name field at 0-100)
+    const nameField = header.subarray(0, 100).toString('utf-8').replace(/\0/g, '');
+    const prefix = header.subarray(345, 500).toString('utf-8').replace(/\0/g, '');
+    const fullName = prefix ? prefix + '/' + nameField : nameField;
+
+    // Parse size (octal ASCII at offset 124-136)
+    const sizeStr = header.subarray(124, 136).toString('utf-8').replace(/\0/g, '').trim();
+    const size = sizeStr ? parseInt(sizeStr, 8) : 0;
+
+    // Type flag at offset 156 (ASCII '5' = dir, '0' or NUL = regular file)
+    const typeFlag = header[156];
+
+    // Data occupies ceil(size / 512) * 512 bytes
+    const dataBlocks = Math.ceil(size / BLOCK) * BLOCK;
+
+    // Strip first path component (equivalent to --strip-components=1)
+    const slashIdx = fullName.indexOf('/');
+    const stripped = slashIdx >= 0 ? fullName.slice(slashIdx + 1) : '';
+
+    if (!stripped) {
+      offset += dataBlocks;
+      continue;
+    }
+
+    const outPath = path.join(destDir, stripped);
+
+    // Prevent path traversal
+    if (!outPath.startsWith(destDir)) {
+      offset += dataBlocks;
+      continue;
+    }
+
+    if (typeFlag === 53 /* '5' */ || fullName.endsWith('/')) {
+      // Directory
+      fs.mkdirSync(outPath, { recursive: true });
+    } else if (typeFlag === 48 /* '0' */ || typeFlag === 0) {
+      // Regular file
+      fs.mkdirSync(path.dirname(outPath), { recursive: true });
+      fs.writeFileSync(outPath, tarData.subarray(offset, offset + size));
+    }
+    // Skip symlinks, pax headers, etc.
+
+    offset += dataBlocks;
+  }
+}
 
 // ── Curated allowlist of pre-tested demo repos ──
 // Open-ended repo import needs Docker container execution before it's safe
@@ -306,7 +408,7 @@ async function previewGitHubRepo(url, branch, subPath) {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'synapse-import-'));
 
   try {
-    // Parse owner/repo from the GitHub URL for tarball download
+    // Parse owner/repo from the GitHub URL
     const urlMatch = url.replace(/\.git$/, '').replace(/\/$/, '').match(/github\.com\/([^\/]+)\/([^\/]+)/);
     if (!urlMatch) {
       throw new Error('Invalid GitHub URL format. Expected: https://github.com/owner/repo');
@@ -314,46 +416,36 @@ async function previewGitHubRepo(url, branch, subPath) {
     const [, owner, repoName] = urlMatch;
     const targetBranch = branch || 'main';
 
-    // Use tarball download instead of git clone — works without git installed
-    fs.mkdirSync(path.join(tempDir, 'repo'), { recursive: true });
-    let downloaded = false;
+    // Download and extract using pure Node.js (no git/curl/tar needed)
+    const repoDestDir = path.join(tempDir, 'repo');
+    fs.mkdirSync(repoDestDir, { recursive: true });
 
-    // Try tarball download (works on Railway/Render/Fly without git)
     const branchesToTry = [targetBranch];
     if (targetBranch === 'main') branchesToTry.push('master');
 
+    let downloaded = false;
     for (const branchName of branchesToTry) {
       const tarballUrl = `https://github.com/${owner}/${repoName}/archive/refs/heads/${branchName}.tar.gz`;
-      console.log(`[GitHub Import] Downloading tarball from ${tarballUrl}...`);
+      console.log(`[GitHub Import] Downloading ${owner}/${repoName} (${branchName}) via Node.js HTTPS...`);
       try {
-        execSync(
-          `curl -sfL "${tarballUrl}" | tar xz --strip-components=1 -C "${tempDir}/repo"`,
-          { timeout: 120000, stdio: 'pipe' }
-        );
+        const gzBuffer = await httpsDownload(tarballUrl);
+        console.log(`[GitHub Import] Downloaded ${(gzBuffer.length / 1024 / 1024).toFixed(1)} MB, extracting...`);
+        await extractTarGz(gzBuffer, repoDestDir);
         downloaded = true;
-        console.log(`[GitHub Import] ✅ Tarball extracted (branch: ${branchName})`);
+        console.log(`[GitHub Import] ✅ Extracted (branch: ${branchName})`);
         break;
       } catch (dlErr) {
-        console.log(`[GitHub Import] Tarball download failed for branch "${branchName}": ${dlErr.message}`);
+        console.log(`[GitHub Import] Branch "${branchName}" failed: ${dlErr.message}`);
       }
     }
 
-    // Fallback to git clone if tarball download failed
     if (!downloaded) {
-      console.log('[GitHub Import] Tarball method failed, falling back to git clone...');
-      // Remove the empty repo dir created above
-      fs.rmSync(path.join(tempDir, 'repo'), { recursive: true, force: true });
-      const cloneUrl = url.endsWith('.git') ? url : `${url}.git`;
-      const branchArg = branch ? `--branch ${branch}` : '';
-      execSync(
-        `git clone --depth 1 ${branchArg} ${cloneUrl} ${tempDir}/repo`,
-        { timeout: 120000, stdio: 'pipe' }
-      );
+      throw new Error(`Could not download repository ${owner}/${repoName}. Tried branches: ${branchesToTry.join(', ')}`);
     }
 
     const repoDir = subPath
-      ? path.join(tempDir, 'repo', subPath)
-      : path.join(tempDir, 'repo');
+      ? path.join(repoDestDir, subPath)
+      : repoDestDir;
 
     if (!fs.existsSync(repoDir)) {
       throw new Error(`Subdirectory "${subPath}" not found in the repository.`);
@@ -365,7 +457,7 @@ async function previewGitHubRepo(url, branch, subPath) {
     // Scan for instrumentation points
     const scan = scanForInstrumentationPoints(repoDir, projectType.language);
 
-    // Clean up the download (preview only, we'll re-download on confirm)
+    // Clean up
     fs.rmSync(tempDir, { recursive: true, force: true });
 
     return {
@@ -397,10 +489,7 @@ async function previewGitHubRepo(url, branch, subPath) {
       fs.rmSync(tempDir, { recursive: true, force: true });
     } catch {}
 
-    if (err.message.includes('not found') || err.message.includes('128') || err.message.includes('curl') || err.message.includes('tar')) {
-      throw new Error(`Failed to download repository. Check the URL and make sure it's a public repo.`);
-    }
-    throw err;
+    throw new Error(`Failed to download repository: ${err.message}`);
   }
 }
 
