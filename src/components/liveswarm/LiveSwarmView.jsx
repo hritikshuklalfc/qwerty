@@ -857,6 +857,7 @@ function HrsDetectionPanel({ hrsScores, agents, agentKeys }) {
 // MAIN LIVE SWARM VIEW
 // ═══════════════════════════════════════════════════════════
 export default function LiveSwarmView({ activeSwarmId, setLiveAgentCount }) {
+  const [showHrsInfo, setShowHrsInfo] = useState(false);
   const {
     swarms, agents, events, alerts, tokenHistory, hrsScores, systemStatus, isConnected, isWaitingForEvent,
     killAgent, killAll, restartAgent, restartAll, resumeAgent, triggerRogue, dismissAlert, clearAlerts,
