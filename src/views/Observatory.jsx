@@ -420,9 +420,6 @@ export default function Observatory() {
           <span>Custom</span>
         </button>
 
-        {/* ── Engine Mode Toggle + Status ── */}
-        <div className="ml-auto flex items-center gap-3">
-
         {/* ── Right Section: Engine Mode Toggle + Status ── */}
         <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap ml-auto justify-end shrink-0">
           {/* Engine Mode Toggle: AI vs Simulation */}
