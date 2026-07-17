@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "start": "node backend/synapse-observatory/server/index.js",
     "dev": "lsof -ti:4000 | xargs kill -9 2>/dev/null || true && concurrently \"vite\" \"cd backend/synapse-observatory/server && node index.js\"",
     "build": "vite build",
     "lint": "oxlint",
