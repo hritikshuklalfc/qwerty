@@ -7,22 +7,26 @@ export default function AboutTeam() {
     {
       name: "Hritik Raj",
       role: "CEO & Co-Founder",
-      imageSrc: "/people_images/Hritik Raj.jpeg"
+      imageSrc: "/people_images/Hritik Raj.jpeg",
+      linkedin: "https://www.linkedin.com/in/hritikshukla005"
     },
     {
       name: "Sachin Rana",
       role: "Lead Systems Architect",
-      imageSrc: "/people_images/Sachin Rana.jpg"
+      imageSrc: "/people_images/Sachin Rana.jpg",
+      linkedin: "https://www.linkedin.com/in/sachin-rana077"
     },
     {
       name: "Mannat Kumar",
       role: "Principal Data & AI Infrastructure Engineer",
-      imageSrc: "/people_images/Mannat Kumar.jpeg"
+      imageSrc: "/people_images/Mannat Kumar.jpeg",
+      linkedin: "https://www.linkedin.com/in/mannat-kumar-91407837a?utm_source=share_via&utm_content=profile&utm_medium=member_android"
     },
     {
       name: "Utsav Raj",
       role: "Senior Full-Stack Interaction Developer",
-      imageSrc: "/people_images/Utsav Raj.jpeg"
+      imageSrc: "/people_images/Utsav Raj.jpeg",
+      linkedin: "https://www.linkedin.com/in/utsav-raj04"
     }
   ];
 

@@ -72,8 +72,22 @@ export default function Footer() {
         <div className="flex flex-col md:flex-row items-center justify-between pt-8 border-t border-border text-sm text-text-tertiary">
           <p>© {new Date().getFullYear()} Synapse OS. All rights reserved.</p>
           <div className="flex gap-4 mt-4 md:mt-0">
-            <a href="#" className="hover:text-primary transition-colors">Twitter</a>
-            <a href="#" className="hover:text-primary transition-colors">LinkedIn</a>
+            <a 
+              href="https://x.com/ScamManLovesLFC" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="hover:text-primary transition-colors"
+            >
+              Twitter
+            </a>
+            <a 
+              href="https://www.linkedin.com/in/mannat-kumar-91407837a?utm_source=share_via&utm_content=profile&utm_medium=member_android" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="hover:text-primary transition-colors"
+            >
+              LinkedIn
+            </a>
           </div>
         </div>
       </div>
