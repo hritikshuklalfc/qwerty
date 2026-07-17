@@ -16,8 +16,9 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background font-sans text-text-primary selection:bg-primary/20 selection:text-primary">
-      <TopNav />
-      <main>
+      <div className="max-w-[1440px] mx-auto border-x border-border/50 min-h-screen relative shadow-2xl shadow-black/5 bg-white">
+        <TopNav />
+        <main>
         <HeroSection />
         <LogosSection />
         <HumanAIIntersection />
@@ -26,6 +27,7 @@ export default function LandingPage() {
 
       </main>
       <Footer />
+      </div>
     </div>
   );
 }
