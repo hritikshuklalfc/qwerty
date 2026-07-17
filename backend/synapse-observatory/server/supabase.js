@@ -6,11 +6,18 @@ const supabaseKey = process.env.SUPABASE_KEY;
 
 let supabase = null;
 
-if (supabaseUrl && supabaseKey && supabaseKey !== 'YOUR_ANON_KEY_HERE') {
+if (
+  supabaseUrl &&
+  /^https?:\/\//i.test(supabaseUrl) &&
+  supabaseKey &&
+  supabaseKey !== 'YOUR_ANON_KEY_HERE' &&
+  supabaseKey !== 'your_supabase_service_role_key_here' &&
+  supabaseKey !== 'your_supabase_anon_key_here'
+) {
   supabase = createClient(supabaseUrl, supabaseKey);
   console.log('[SUPABASE] Client initialized successfully.');
 } else {
-  console.log('[SUPABASE] ⚠️ Client NOT initialized. Please set SUPABASE_KEY in .env');
+  console.log('[SUPABASE] ⚠️ Client NOT initialized (using local/simulation mode). Set valid SUPABASE_URL & SUPABASE_KEY in .env if needed.');
 }
 
 /**

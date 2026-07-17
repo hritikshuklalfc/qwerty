@@ -7,7 +7,8 @@
     "dev": "concurrently \"vite\" \"node backend/synapse-observatory/server/index.js\"",
     "build": "vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "postinstall": "npm install --prefix backend/synapse-observatory/server"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
