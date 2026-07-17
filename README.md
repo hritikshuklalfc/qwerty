@@ -1,88 +1,53 @@
-# Synapse Observatory — Product Detail
+# Synapse OS
 
-> [!NOTE]
-> **Synapse Observatory** is a next-generation visibility and governance platform designed for the era of autonomous multi-agent systems.
+**Synapse OS** is a next-generation visibility, orchestration, and governance platform designed for the era of autonomous multi-agent systems. 
 
-## 1. What It Is
-Synapse Observatory is the "Datadog for AI Agents." It is a real-time monitoring, debugging, and governance platform that gives enterprises complete visibility into what their autonomous AI agent swarms are doing. 
+As enterprises move from single-agent chatbots to complex, multi-agent workflows (where agents communicate, negotiate, and delegate tasks autonomously), the biggest barrier to production adoption is the "black box" problem. Synapse OS cracks open this black box, providing a unified glass-pane view into agent topologies, real-time telemetry, and decision-making logic.
 
-As companies move from single-agent chatbots to complex, multi-agent workflows (where agents communicate, negotiate, and delegate tasks to each other), the biggest barrier to enterprise adoption is a "black box" problem. Synapse Observatory cracks open this black box, providing a glass-pane view into agent topologies, communication streams, and decision-making logic.
+---
 
-## 2. What It Does
-Synapse Observatory provides a comprehensive suite of tools to monitor and control AI agents:
+## 🚀 Key Capabilities
 
-- **Real-Time Topology Mapping**: Visualizes the entire agent swarm on a dynamic canvas.
-- **Inter-Agent Communication Tracing**: Shows exactly when and why one agent hands off work to another, with animated edge connections highlighting data flow.
-- **Cost & Token Tracking**: Tracks the granular cost (actions/tokens) of individual micro-agents in real-time.
-- **Activity & Decision Logging**: Captures chronological, terminal-style logs of the internal thought processes and actions taken by each agent.
-- **Human-in-the-Loop (HITL) Governance**: Pauses autonomous execution when critical thresholds (e.g., high budget approvals) are reached, requiring human sign-off before proceeding.
-- **Scenario Replay & Timelines**: Generates horizontal execution timelines to break down how a complex scenario (e.g., self-healing supply chain) was resolved step-by-step.
+Synapse OS provides a comprehensive suite of tools to monitor, import, and control AI agent swarms at scale:
 
-## 3. How It Is Different
-The current AI market is heavily saturated with **Agent Frameworks** (e.g., LangChain, AutoGen, CrewAI) and **Agent Builders** (e.g., Flowise, Voiceflow). 
+### 1. Agent Swarm Ingestion & Importer
+Bring your existing agent architectures into Synapse OS instantly.
+* **n8n Integration:** Import complex n8n workflows directly via URL to monitor them as autonomous agent swarms.
+* **GitHub Ingestion:** Connect directly to authorized GitHub repositories to visualize pre-tested agent frameworks and deployments.
 
-**Synapse Observatory does not compete in the crowded "builder" space.** 
+### 2. Real-Time Topology Mapping
+* **Dynamic Canvas:** Powered by React Flow, visualize your entire agent swarm network.
+* **Live Telemetry:** Monitor inter-agent communication, data flow, and handoffs in real-time as they happen.
 
-> [!TIP]
-> **The Differentiation:** Instead of helping you *build* an agent, Synapse helps you *trust* the agents you've already built. 
+### 3. Enterprise Observability & Metrics
+* **Cost & Token Tracking:** Track granular costs, token consumption, and latency metrics across your entire swarm or down to individual micro-agents.
+* **Hallucination Risk Scoring (HRS):** Automated monitoring of agent outputs to detect deviations, anomalies, and hallucination risks before they impact downstream systems.
 
-- **Agnostic Layer**: It is designed to sit on top of any backend agent framework as an observability layer.
-- **Focus on Governance**: While others focus on making agents smarter, Synapse focuses on making them accountable, traceable, and safe for enterprise deployment.
-- **Consumer-Grade UX for Enterprise**: It utilizes a premium, glassmorphic design system with micro-animations that turn abstract code logs into an intuitive, physical-feeling command center.
+### 4. Human-in-the-Loop (HITL) Governance
+* **Execution Controls:** Pause, resume, or terminate rogue agents instantly.
+* **Approval Gates:** Automatically pause autonomous execution when critical thresholds (e.g., high budget approvals, sensitive data access) are reached, requiring human sign-off before proceeding.
 
-## 4. How It Works (Technical Architecture)
+### 5. Advanced Alerting System
+* Proactive alerts for **Cost Spikes**, **Cascade Failures** (when one failing agent triggers a chain reaction), and **System Safeguards**.
 
-Synapse Observatory is built as a highly responsive, event-driven frontend application. 
+---
 
-### The Core Engine: `AgentSimulator.js`
-At the heart of the demo is a custom-built, event-driven state machine. It simulates a complex backend agent orchestration system without requiring heavy API dependencies.
-- It manages an internal state of inventory, pricing, and active agents.
-- It emits specific events via a custom EventBus (`activity`, `agent-status`, `agent-handoff`, `approval-added`).
-- It executes predefined, highly complex business scenarios (e.g., "Invoice OCR Processing", "Self-Healing Supply Chain") using asynchronous delays to mimic LLM inference times.
+## 🏗 Technical Architecture
 
-### The Visualization Layer: `Observatory.jsx` (React Flow)
-The visual representation is powered by React Flow, heavily customized with CSS modules.
-- **Nodes**: Custom React components representing agents. They react to state changes (e.g., a glowing pulse animation triggers when status switches to `PROCESSING`).
-- **Edges**: Connections between nodes that are dynamically activated by listening to `agent-handoff` events.
-- **Context API (`SynapseContext.jsx`)**: Acts as the centralized bridge. It subscribes to the `AgentSimulator` events and broadcasts them to the UI components (Canvas, Timeline, Command Center).
+Synapse OS is built as a highly responsive, event-driven platform optimized for real-time data processing.
 
-```mermaid
-graph TD
-    subgraph Backend Simulation
-        AS[AgentSimulator.js]
-        EB[EventBus]
-        AS -- Emits Events --> EB
-    end
+* **Frontend:** React 18, Vite, Tailwind CSS, Lucide Icons, Recharts for data visualization, and `@xyflow/react` for complex node-based topology mapping.
+* **Backend:** Node.js, Express, and `socket.io` for high-frequency, low-latency WebSocket communication.
+* **State Management:** Custom Context API (`SynapseContext.jsx`) and custom hooks (`useSwarmSocket.js`) that act as a centralized bridge, subscribing to backend telemetry and broadcasting it seamlessly to the UI (Canvas, Timeline, Command Center).
 
-    subgraph React State Hub
-        SC[SynapseContext.jsx]
-        EB -- Subscribes --> SC
-        SC -- Manages --> State[Active Agents, Logs, Handoffs, Approvals]
-    end
+---
 
-    subgraph Presentation Layer
-        State -- Drives --> Canvas[Observatory Canvas React Flow]
-        State -- Drives --> TL[Decision Timeline]
-        State -- Drives --> DP[Agent Detail Panel]
-        State -- Drives --> CC[Command Center Dashboards]
-    end
-```
+## 🛡 The Synapse OS Philosophy
 
-## 5. Use Case Scenarios
+The current AI market is heavily saturated with *Agent Frameworks* (LangChain, AutoGen, CrewAI) and *Agent Builders*. 
 
-The platform currently ships with three demonstration scenarios that prove its enterprise value:
+**Synapse OS does not compete in the builder space.**
 
-1. **Invoice OCR Processing**
-   - *Flow*: `Inventory` → `Procurement` → `Finance`
-   - *Value*: Shows how agents handle mundane data entry, triggering alerts only when stock drops below thresholds or budgets require approval.
-2. **WhatsApp Custom Order**
-   - *Flow*: `Pricing` → `Inventory` → `Logistics`
-   - *Value*: Demonstrates omnichannel ingestion, where an unstructured customer request is routed, priced, and scheduled by a swarm of specialized agents.
-3. **Self-Healing Supply Chain**
-   - *Flow*: External API Alert → `Logistics` → `Pricing` → `Inventory` → `Procurement`
-   - *Value*: The flagship demo. A weather API detects a cyclone on a shipping route. Agents autonomously calculate the delay, adjust dynamic pricing for affected SKUs, reserve safety stock, and reroute shipments via a backup supplier — completely autonomously.
-
-## 6. The "Hackathon Winning" Pitch
-If presenting this at a hackathon, the core narrative should be:
-
-> *"Everyone here is building AI agents. But if an enterprise deploys an agent swarm that hallucinates, spends $10,000, and breaks a supply chain — who is responsible? You can't deploy what you can't observe. We built Synapse Observatory, the mission control for autonomous agents. We don't build the agents; we provide the observability and governance layer that makes deploying them safe, trackable, and enterprise-ready."*
+Instead of helping you *build* an agent, Synapse helps you *trust* the agents you have already built. 
+* **Agnostic Layer:** Designed to sit on top of any backend agent framework as an observability and governance layer.
+* **Focus on Governance:** While others focus on making agents smarter, Synapse OS focuses on making them accountable, traceable, and safe for enterprise deployment. You cannot deploy what you cannot observe.
