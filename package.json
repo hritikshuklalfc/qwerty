@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "postinstall": "npm install --prefix backend/synapse-observatory/server"
+    "postinstall": "node -e \"if(!require('fs').existsSync('backend/synapse-observatory/server/package.json'))process.exit(0);else process.exit(1)\" || npm install --prefix backend/synapse-observatory/server"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
