@@ -6,12 +6,13 @@
 // ═══════════════════════════════════════════════════════════
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useSwarmSocket } from '../../hooks/useSwarmSocket';
 import {
   Brain, Activity, AlertTriangle, DollarSign, Wifi, WifiOff, Zap,
   Cpu, Clock, Crosshair, RotateCcw, Radio, BarChart3,
   StopCircle, ShieldAlert, Wrench, PlayCircle, Skull, X, TrendingUp,
-  Shield, Eye,
+  Shield, Eye, Info,
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
@@ -566,8 +567,184 @@ function HallucinationAlert({ alerts, agents, systemStatus, killAgent, killAll, 
 }
 
 
+// ── HRS Info Modal ──
+function HrsInfoModal({ onClose }) {
+  const [step, setStep] = useState(1);
+  const [windowState, setWindowState] = useState('normal'); // 'normal' | 'minimized' | 'maximized'
+
+  const portalNode = typeof document !== 'undefined' ? document.body : null;
+
+  if (windowState === 'minimized') {
+    const minContent = (
+      <div className="fixed top-24 right-8 z-[9999]" style={{ animation: 'fadeIn 0.3s ease-out' }}>
+        <button onClick={() => setWindowState('normal')} className="swarm-glass-card px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 border border-white/20 hover:bg-white/80 transition-all group cursor-pointer" style={{ background: 'rgba(255, 255, 255, 0.95)' }}>
+          <Info size={16} className="text-gray-500 group-hover:text-gray-800 transition-colors" />
+          <span className="text-xs font-bold uppercase tracking-widest text-gray-800">HRS Doc</span>
+          <div className="flex gap-1.5 ml-4">
+             <div className="w-2.5 h-2.5 rounded-full bg-red-500 border border-red-600/20" />
+             <div className="w-2.5 h-2.5 rounded-full bg-yellow-400 border border-yellow-500/20" />
+             <div className="w-2.5 h-2.5 rounded-full bg-green-500 border border-green-600/20" />
+          </div>
+        </button>
+      </div>
+    );
+    return portalNode ? createPortal(minContent, portalNode) : minContent;
+  }
+
+  const modalContent = (
+    <div className={`fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300 ${windowState === 'maximized' ? 'p-4' : 'p-6'}`} style={{ animation: 'fadeIn 0.3s ease-out' }}>
+      <style>{`
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-slide-up { animation: slideUp 0.4s ease-out forwards; }
+      `}</style>
+      <div 
+        className={`swarm-glass-card shadow-2xl relative flex flex-col border border-white/20 transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          windowState === 'maximized' ? 'w-[98vw] max-w-none rounded-xl' : 'w-full max-w-5xl rounded-xl'
+        }`} 
+        style={{ 
+          height: windowState === 'maximized' ? '98vh' : '85vh', 
+          maxHeight: windowState === 'maximized' ? '98vh' : '750px', 
+          background: windowState === 'maximized' ? '#ffffff' : 'rgba(255, 255, 255, 0.95)' 
+        }}
+      >
+        <div className="flex justify-start border-b border-black/10 px-4 py-3 bg-black/5">
+          <div className="flex items-center gap-2 group">
+            <button onClick={onClose} className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-600 border border-red-600/20 shadow-sm transition-colors" title="Close" />
+            <button onClick={() => setWindowState('minimized')} className="w-3 h-3 rounded-full bg-yellow-400 hover:bg-yellow-500 border border-yellow-500/20 shadow-sm transition-colors" title="Minimize" />
+            <button onClick={() => setWindowState(windowState === 'maximized' ? 'normal' : 'maximized')} className="w-3 h-3 rounded-full bg-green-500 hover:bg-green-600 border border-green-600/20 shadow-sm transition-colors" title="Maximize/Restore" />
+          </div>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-8 lg:p-12 flex flex-col">
+          {step === 1 && (
+            <div className="flex flex-col h-full justify-center max-w-3xl mx-auto animate-slide-up">
+              <span className="swarm-badge border border-gray-500/30 bg-gray-500/10 text-gray-800 mb-6 self-start">SYS.DOC.01</span>
+              <h1 className="text-4xl font-black text-gray-900 tracking-tight mb-6 uppercase">Understanding HRS</h1>
+              <p className="text-lg text-gray-600 mb-6 font-mono leading-relaxed">
+                The <strong className="text-gray-900">Hallucination Risk Score (HRS)</strong> is a real-time safety heuristic. It continuously computes the probability that an LLM agent is generating mathematically incorrect, logically inconsistent, or factually inaccurate ("hallucinated") data.
+              </p>
+              <div className="bg-black/5 border border-black/10 rounded-lg p-6 mb-10 font-mono text-sm text-gray-700">
+                <div className="flex items-start gap-3">
+                  <Activity size={16} className="text-gray-600 mt-1 flex-shrink-0" />
+                  <div>
+                    <strong className="block text-gray-900 mb-1">How it works:</strong>
+                    The Engine sits between the agent's reasoning chain and its execution output, scoring every token stream. If the aggregated score exceeds safety thresholds, the system triggers an Auto-Pause.
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => setStep(2)} className="bg-black text-white px-6 py-3 font-bold uppercase tracking-wider rounded-md hover:bg-black/80 transition-colors self-start shadow-sm border border-black flex items-center gap-2">
+                Initialize Defense Tiers <Zap size={14} />
+              </button>
+            </div>
+          )}
+          
+          {step === 2 && (
+            <div className="w-full h-full flex flex-col animate-slide-up">
+              <div className="mb-10">
+                <span className="swarm-badge border border-gray-500/30 bg-gray-500/10 text-gray-800 mb-4 inline-block">SYS.DOC.02</span>
+                <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight mb-2">The 3-Tier Defense System</h2>
+                <p className="font-mono text-gray-500 text-sm">Deep-dive into the hierarchical validation layers.</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1">
+                <div className="swarm-glass-card p-6 border-t-4 border-t-gray-400 flex flex-col">
+                  <div className="text-4xl font-black text-gray-300 mb-4 font-mono">T1</div>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-3">Math & Logic</h3>
+                  <div className="flex-1 font-mono text-xs text-gray-600 space-y-3">
+                    <p>Calculates statistical variance in numerical outputs.</p>
+                    <p>Detects reasoning loops (e.g. A → B → A).</p>
+                    <p>Validates basic arithmetic integrity before execution.</p>
+                  </div>
+                </div>
+                
+                <div className="swarm-glass-card p-6 border-t-4 border-t-gray-500 flex flex-col">
+                  <div className="text-4xl font-black text-gray-400 mb-4 font-mono">T2</div>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-3">Contracts</h3>
+                  <div className="flex-1 font-mono text-xs text-gray-600 space-y-3">
+                    <p>Enforces strict JSON schema compliance.</p>
+                    <p>Blocks prompt injection attempts and system-prompt leakages.</p>
+                    <p>Ensures agent stays within defined behavioral boundaries.</p>
+                  </div>
+                </div>
+                
+                <div className="swarm-glass-card p-6 border-t-4 border-t-gray-600 flex flex-col">
+                  <div className="text-4xl font-black text-gray-500 mb-4 font-mono">T3</div>
+                  <h3 className="text-sm font-bold text-gray-900 uppercase tracking-widest mb-3">Cross-Reference</h3>
+                  <div className="flex-1 font-mono text-xs text-gray-600 space-y-3">
+                    <p>Queries external vector databases (RAG) to verify claims.</p>
+                    <p>Detects highly-confident false assertions ("deep hallucinations").</p>
+                    <p>Cost-heavy: only triggers when T1 & T2 flag suspicion.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-10 flex justify-between items-center pt-6 border-t border-black/10">
+                <button onClick={() => setStep(1)} className="text-xs font-bold uppercase tracking-wider text-gray-500 hover:text-black transition-colors">← Back</button>
+                <button onClick={() => setStep(3)} className="bg-black text-white px-6 py-3 font-bold uppercase tracking-wider rounded-md hover:bg-black/80 transition-colors shadow-sm flex items-center gap-2">
+                  View Telemetry States <Activity size={14} />
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {step === 3 && (
+            <div className="w-full h-full flex flex-col animate-slide-up">
+              <div className="mb-10 text-center">
+                <span className="swarm-badge border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 mb-4 inline-block">SYS.DOC.03</span>
+                <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tight mb-2">Reading the Risk Gauge</h2>
+                <p className="font-mono text-gray-500 text-sm">Understanding UI states and system interventions.</p>
+              </div>
+              
+              <div className="flex flex-col md:flex-row gap-6 flex-1 items-center justify-center">
+                {/* Nominal State */}
+                <div className="flex-1 w-full max-w-sm swarm-glass-card p-6 border border-emerald-500/30">
+                  <div className="flex justify-between items-center mb-4">
+                    <span className="swarm-badge border border-emerald-500/30 bg-emerald-500/10 text-emerald-600">✓ NOMINAL</span>
+                    <span className="text-2xl font-black font-mono text-emerald-600">2%</span>
+                  </div>
+                  <div className="w-full bg-black/5 h-2 rounded-full mb-6 overflow-hidden">
+                    <div className="h-full bg-emerald-500 rounded-full transition-all duration-1000" style={{ width: '2%' }}></div>
+                  </div>
+                  <div className="font-mono text-xs text-gray-600 space-y-2">
+                    <p><strong className="text-gray-900">Status:</strong> All clear. Confidence is high.</p>
+                    <p><strong className="text-gray-900">Action:</strong> Agent continues execution loop.</p>
+                  </div>
+                </div>
+                
+                {/* Critical State */}
+                <div className="flex-1 w-full max-w-sm swarm-glass-card swarm-rogue-card p-6 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 bg-red-600 text-white text-[9px] font-bold px-3 py-1 uppercase tracking-widest font-mono">ACTION TAKEN</div>
+                  <div className="flex justify-between items-center mb-4 mt-2">
+                    <span className="swarm-badge border border-red-500/30 bg-red-500/10 text-red-600 animate-pulse">⚠ AUTO-PAUSE</span>
+                    <span className="text-2xl font-black font-mono text-red-600">98%</span>
+                  </div>
+                  <div className="w-full bg-red-500/20 h-2 rounded-full mb-6 overflow-hidden">
+                    <div className="h-full bg-red-600 rounded-full transition-all duration-1000" style={{ width: '98%' }}></div>
+                  </div>
+                  <div className="font-mono text-xs text-red-900/80 space-y-2">
+                    <p><strong className="text-red-700">Status:</strong> Severe logic failure detected.</p>
+                    <p><strong className="text-red-700">Action:</strong> Agent instantly paused to prevent corrupted data from cascading downstream.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-10 flex justify-center pt-6 border-t border-black/10">
+                <button onClick={() => setStep(1)} className="text-xs font-bold uppercase tracking-wider text-gray-500 hover:text-black flex items-center gap-2 transition-colors">
+                  <RotateCcw size={12} /> Start Over
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+  return portalNode ? createPortal(modalContent, portalNode) : modalContent;
+}
+
 // ── HRS Detection Panel ──
-function HrsDetectionPanel({ hrsScores, agents }) {
+function HrsDetectionPanel({ hrsScores, agents, onShowInfo }) {
   const scores = Object.values(hrsScores);
   if (scores.length === 0) return null;
 
@@ -581,6 +758,9 @@ function HrsDetectionPanel({ hrsScores, agents }) {
         <div className="flex items-center gap-2">
           <Shield size={16} className={anyWarning ? 'text-amber-600' : 'text-emerald-600'} />
           <h3 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Hallucination Detection Engine</h3>
+          <button onClick={onShowInfo} className="text-gray-400 hover:text-gray-900 transition-colors ml-1 p-1 rounded-full hover:bg-black/5" title="What does this mean?">
+            <Info size={14} />
+          </button>
         </div>
         <div className="flex items-center gap-2">
           {activeTiers.map(t => (
@@ -652,6 +832,8 @@ export default function LiveSwarmView() {
     killAgent, killAll, restartAgent, restartAll, resumeAgent, triggerRogue, dismissAlert, clearAlerts,
   } = useSwarmSocket();
 
+  const [showHrsInfo, setShowHrsInfo] = useState(false);
+
   const agentList = AGENT_ORDER.map(id => agents[id]).filter(Boolean);
   const activeAgentCount = agentList.filter(a => a.status !== 'killed').length;
   const activeAlertCount = systemStatus.alertCount || 0;
@@ -667,6 +849,7 @@ export default function LiveSwarmView() {
 
   return (
     <div className="h-full w-full bg-transparent overflow-y-auto">
+      {showHrsInfo && <HrsInfoModal onClose={() => setShowHrsInfo(false)} />}
       <HallucinationAlert alerts={alerts} agents={agents} systemStatus={systemStatus} killAgent={killAgent} killAll={killAll} dismissAlert={dismissAlert} clearAlerts={clearAlerts} />
       <div className="w-full h-full px-6 py-6 space-y-5">
         {/* Stats Row */}
@@ -683,7 +866,7 @@ export default function LiveSwarmView() {
         </div>
 
         {/* HRS Detection Panel */}
-        <HrsDetectionPanel hrsScores={hrsScores} agents={agents} />
+        <HrsDetectionPanel hrsScores={hrsScores} agents={agents} onShowInfo={() => setShowHrsInfo(true)} />
 
         {/* Swarm Topology */}
         <SwarmTopology agents={agents} selectedAgent={selectedAgent} setSelectedAgent={setSelectedAgent} />
