@@ -136,8 +136,22 @@ const Layout = () => {
 
         {/* Bottom Nav Links */}
         <div className="flex flex-col gap-4 w-full items-center mt-auto pb-4">
-          <button className="w-10 h-10 flex items-center justify-center text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
-            <HeadphonesIcon size={20} />
+          <button
+            onClick={() => {
+              navigate('/app/support');
+              setIsMobileMenuOpen(false);
+            }}
+            title="Synapse AI Support & Queries"
+            className={`w-10 h-10 rounded-none flex items-center justify-center transition-colors relative ${
+              location.pathname === '/app/support'
+                ? 'bg-black/5 dark:bg-white/10 text-black dark:text-white'
+                : 'text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10'
+            }`}
+          >
+            <HeadphonesIcon size={20} strokeWidth={location.pathname === '/app/support' ? 2.5 : 2} />
+            {location.pathname === '/app/support' && (
+              <div className="absolute -left-[1px] top-1/2 -translate-y-1/2 w-[3px] h-6 bg-black dark:bg-white" />
+            )}
           </button>
           
           {/* Dark mode removed entirely */}

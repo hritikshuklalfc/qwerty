@@ -240,46 +240,50 @@ export default function Observatory() {
 
       {/* ── Scenario Launcher Bar ── */}
       <div className={styles.scenarioBar}>
-        <div className="flex items-center gap-2 mr-4">
-          <Cpu size={16} className="text-black/50 dark:text-white/50" />
-          <span className="text-sm font-bold text-black dark:text-white tracking-tight">Observatory</span>
+        {/* Left Section: Title & Scenario Cards */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap flex-1 min-w-0">
+          <div className="flex items-center gap-2 shrink-0 mr-1 sm:mr-2">
+            <Cpu size={16} className="text-black/50 dark:text-white/50" />
+            <span className="text-sm font-bold text-black dark:text-white tracking-tight">Observatory</span>
+          </div>
+          <div className="hidden sm:block w-px h-6 bg-black/10 dark:bg-white/10 shrink-0" />
+
+          <div className="flex items-center gap-2 flex-wrap">
+            {Object.entries(scenarios).map(([id, scenario]) => (
+              <button
+                key={id}
+                onClick={() => handleRunScenario(id)}
+                disabled={!!scenarioRunning}
+                className={`${styles.scenarioCard} ${
+                  scenarioRunning === id ? styles.scenarioCardActive : ''
+                } ${scenarioRunning && scenarioRunning !== id ? styles.scenarioCardDisabled : ''}`}
+              >
+                <span className="text-base">{scenario.icon}</span>
+                <span>{scenario.title}</span>
+                {scenarioRunning === id && (
+                  <div className="w-3 h-3 border-2 border-cyan-500 border-t-transparent animate-spin rounded-full" />
+                )}
+                {!scenarioRunning && <Play size={12} className="opacity-40" />}
+              </button>
+            ))}
+
+            {/* ── Custom Prompt Button (NEW) ── */}
+            <button
+              onClick={() => setShowCustomInput(!showCustomInput)}
+              disabled={!!scenarioRunning || engineMode !== 'ai'}
+              className={`${styles.scenarioCard} ${showCustomInput ? styles.scenarioCardActive : ''} ${engineMode !== 'ai' ? 'opacity-40 cursor-not-allowed' : ''}`}
+              title={engineMode !== 'ai' ? 'Switch to LIVE AI mode to use custom prompts' : 'Ask agents anything'}
+            >
+              <Sparkles size={14} className="text-amber-400" />
+              <span>Custom</span>
+            </button>
+          </div>
         </div>
-        <div className="w-px h-6 bg-black/10 dark:bg-white/10" />
 
-        {Object.entries(scenarios).map(([id, scenario]) => (
-          <button
-            key={id}
-            onClick={() => handleRunScenario(id)}
-            disabled={!!scenarioRunning}
-            className={`${styles.scenarioCard} ${
-              scenarioRunning === id ? styles.scenarioCardActive : ''
-            } ${scenarioRunning && scenarioRunning !== id ? styles.scenarioCardDisabled : ''}`}
-          >
-            <span className="text-base">{scenario.icon}</span>
-            <span>{scenario.title}</span>
-            {scenarioRunning === id && (
-              <div className="w-3 h-3 border-2 border-cyan-500 border-t-transparent animate-spin rounded-full" />
-            )}
-            {!scenarioRunning && <Play size={12} className="opacity-40" />}
-          </button>
-        ))}
-
-        {/* ── Custom Prompt Button (NEW) ── */}
-        <button
-          onClick={() => setShowCustomInput(!showCustomInput)}
-          disabled={!!scenarioRunning || engineMode !== 'ai'}
-          className={`${styles.scenarioCard} ${showCustomInput ? styles.scenarioCardActive : ''} ${engineMode !== 'ai' ? 'opacity-40 cursor-not-allowed' : ''}`}
-          title={engineMode !== 'ai' ? 'Switch to LIVE AI mode to use custom prompts' : 'Ask agents anything'}
-        >
-          <Sparkles size={14} className="text-amber-400" />
-          <span>Custom</span>
-        </button>
-
-        {/* ── Engine Mode Toggle + Status ── */}
-        <div className="ml-auto flex items-center gap-3">
-
+        {/* ── Right Section: Engine Mode Toggle + Status ── */}
+        <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap ml-auto justify-end shrink-0">
           {/* Engine Mode Toggle: AI vs Simulation */}
-          <div className="flex bg-black/5 dark:bg-white/5 rounded-lg p-1 border border-black/10 dark:border-white/10">
+          <div className="flex bg-black/5 dark:bg-white/5 rounded-lg p-1 border border-black/10 dark:border-white/10 shrink-0">
             <button
               onClick={() => setEngineMode('ai')}
               className={`px-3 py-1 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 ${
@@ -305,7 +309,7 @@ export default function Observatory() {
           </div>
 
           {/* View Mode Toggle */}
-          <div className="flex bg-black/5 dark:bg-white/5 rounded-lg p-1 border border-black/10 dark:border-white/10">
+          <div className="flex bg-black/5 dark:bg-white/5 rounded-lg p-1 border border-black/10 dark:border-white/10 shrink-0">
             <button
               onClick={() => setViewMode('live')}
               className={`px-3 py-1 rounded-md text-xs font-bold transition-all ${
@@ -330,7 +334,7 @@ export default function Observatory() {
 
           {/* Live AI Status Indicator */}
           {engineMode === 'ai' && (
-            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono font-bold border ${
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono font-bold border shrink-0 ${
               liveMode 
                 ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
                 : hasApiKey
@@ -350,7 +354,7 @@ export default function Observatory() {
 
           {/* Live Telemetry Badge */}
           {liveTelemetry && (
-            <div className="flex items-center gap-2 px-2 py-1 bg-purple-500/10 border border-purple-500/20 rounded-md text-[10px] font-mono text-purple-400">
+            <div className="flex items-center gap-2 px-2 py-1 bg-purple-500/10 border border-purple-500/20 rounded-md text-[10px] font-mono text-purple-400 shrink-0">
               <span>{liveTelemetry.totalTokens} tok</span>
               <span className="opacity-40">|</span>
               <span>${liveTelemetry.totalCost?.toFixed(4)}</span>
@@ -360,12 +364,12 @@ export default function Observatory() {
           )}
 
           {agentApprovals.length > 0 && (
-            <div className="flex items-center gap-1.5 px-2 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px] font-mono font-medium">
+            <div className="flex items-center gap-1.5 px-2 py-1 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-[11px] font-mono font-medium shrink-0">
               <AlertTriangle size={12} />
               {agentApprovals.length} pending
             </div>
           )}
-          <div className="flex items-center gap-1.5 text-[11px] font-mono text-black/50 dark:text-white/50">
+          <div className="flex items-center gap-1.5 text-[11px] font-mono text-black/50 dark:text-white/50 shrink-0">
             <div className="w-2 h-2 bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]" />
             {Object.values(agentStatuses).filter(a => a.status !== 'offline').length} online
           </div>
@@ -374,7 +378,7 @@ export default function Observatory() {
 
       {/* ── Custom Prompt Input Bar (NEW) ── */}
       {showCustomInput && engineMode === 'ai' && (
-        <div className="px-4 py-3 bg-gradient-to-r from-amber-500/5 via-purple-500/5 to-cyan-500/5 border-b border-amber-500/20 dark:border-amber-500/10 flex items-center gap-3 backdrop-blur-xl">
+        <div className="px-4 py-3 bg-gradient-to-r from-amber-500/5 via-purple-500/5 to-cyan-500/5 border-b border-amber-500/20 dark:border-amber-500/10 flex items-center gap-3 flex-wrap backdrop-blur-xl">
           <Sparkles size={16} className="text-amber-400 shrink-0" />
           <input
             ref={customInputRef}
@@ -389,22 +393,24 @@ export default function Observatory() {
             }}
             placeholder="Ask agents anything... e.g. 'A major client cancelled a $50K order. What should we do?'"
             disabled={!!scenarioRunning}
-            className="flex-1 bg-white/60 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-4 py-2 text-sm text-black dark:text-white outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 transition-all placeholder:text-black/30 dark:placeholder:text-white/30 font-medium"
+            className="flex-1 min-w-[240px] bg-white/60 dark:bg-black/40 border border-black/10 dark:border-white/10 rounded-lg px-4 py-2 text-sm text-black dark:text-white outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 transition-all placeholder:text-black/30 dark:placeholder:text-white/30 font-medium"
           />
-          <button
-            onClick={handleCustomPrompt}
-            disabled={!customPrompt.trim() || !!scenarioRunning}
-            className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg text-sm font-bold hover:shadow-lg hover:shadow-amber-500/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
-          >
-            <Send size={14} />
-            Run
-          </button>
-          <button
-            onClick={() => setShowCustomInput(false)}
-            className="p-2 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors"
-          >
-            <X size={16} />
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={handleCustomPrompt}
+              disabled={!customPrompt.trim() || !!scenarioRunning}
+              className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg text-sm font-bold hover:shadow-lg hover:shadow-amber-500/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2 shrink-0"
+            >
+              <Send size={14} />
+              Run
+            </button>
+            <button
+              onClick={() => setShowCustomInput(false)}
+              className="p-2 text-black/40 dark:text-white/40 hover:text-black dark:hover:text-white transition-colors shrink-0"
+            >
+              <X size={16} />
+            </button>
+          </div>
         </div>
       )}
 
