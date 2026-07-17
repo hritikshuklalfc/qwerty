@@ -1,6 +1,39 @@
 import React, { useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
+import { ArrowRight, Shield, Activity, Zap } from 'lucide-react';
 import TopNav from '../components/TopNav';
 import Footer from '../components/Footer';
+
+const cases = [
+  {
+    id: 1,
+    title: 'Autonomous Financial Arbitrage Intercept',
+    icon: <Shield className="text-text-primary" size={24} />,
+    scenario: 'A multi-agent swarm deployed across global liquidity pools initiated rapid arbitrage loops during high market volatility.',
+    problem: 'Without central oversight, two sub-agents began a runaway reasoning loop, attempting to execute conflicting flash loans exceeding risk limits.',
+    intervention: 'Synapse OS detected semantic drift and abnormal token velocity in real time (HRS > 82%), instantly triggering a Tier 3 Auto-Pause before transaction broadcast.',
+    outcome: 'Prevented a potential $1.4M smart contract loss while allowing unaffected data-ingestion nodes to continue monitoring order books safely.'
+  },
+  {
+    id: 2,
+    title: 'Multi-Branch Enterprise Lease Audits',
+    icon: <Activity className="text-text-primary" size={24} />,
+    scenario: 'An autonomous legal dispatch service processing 4,000+ commercial property leases across decentralized regional offices.',
+    problem: 'Agent hallucination caused draft lease renewals to miscalculate annual CPI escalations by 4.5% across 120 key contracts.',
+    intervention: 'Synapse OS consensus validation layer (Tier 2) cross-verified Beta analysis against master compliance rules and flagged the deviation automatically.',
+    outcome: 'Halved audit review cycles from 3 weeks to 4 hours while guaranteeing 100% computational accuracy across all executed lease agreements.'
+  },
+  {
+    id: 3,
+    title: 'Supply Chain Disruption & Fleet Routing',
+    icon: <Zap className="text-text-primary" size={24} />,
+    scenario: 'Autonomous logistics agents coordinating freight rerouting after sudden port closures in Southeast Asia.',
+    problem: 'High API latency and conflicting vendor rate sheets caused agents to repeatedly query stale routes, exhausting token limits.',
+    intervention: 'Observatory command center dynamically reallocated token limits and enforced rate-limiting safeguards while routing decisions through verified backup endpoints.',
+    outcome: 'Successfully rerouted 45 cargo shipments with zero downtime and 40% lower token burn via optimized prompt caching.'
+  }
+];
 
 export default function CaseStudiesPage() {
   useEffect(() => window.scrollTo(0, 0), []);
@@ -22,7 +55,7 @@ export default function CaseStudiesPage() {
         </motion.div>
 
         <div className="space-y-12 mb-24 relative pl-4 md:pl-0">
-          {cases.map((useCase, idx) => (
+          {cases.map((useCase) => (
             <motion.div 
               key={useCase.id}
               initial={{ opacity: 0, y: 30 }}
