@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   ReactFlow,
   Background,
@@ -19,11 +20,38 @@ import {
 } from 'lucide-react';
 import styles from './Observatory.module.css';
 
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null, errorInfo: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("ErrorBoundary caught an error", error, errorInfo);
+    this.setState({ errorInfo });
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: 20, color: 'red', background: 'white', zIndex: 9999, position: 'absolute', inset: 0 }}>
+          <h2>Something went wrong.</h2>
+          <pre>{this.state.error && this.state.error.toString()}</pre>
+          <pre>{this.state.errorInfo && this.state.errorInfo.componentStack}</pre>
+        </div>
+      );
+    }
+    return this.props.children; 
+  }
+}
+
 import LiveSwarmView from '../components/liveswarm/LiveSwarmView';
 
 import { AgentNode } from '../components/observatory/AgentNode';
 import { TimelinePanel } from '../components/observatory/TimelinePanel';
 import { AgentDetailPanel } from '../components/observatory/AgentDetailPanel';
+import { BACKEND_URL } from '../utils/constants';
 
 const nodeTypes = { agentNode: AgentNode };
 
@@ -63,6 +91,7 @@ export default function Observatory() {
     scenarioRunning,
     demoSteps,
     activeHandoffs,
+    knownEdges,
     runScenario,
     runLiveScenario,
     runCustomPrompt,
@@ -72,6 +101,10 @@ export default function Observatory() {
     rejectRequest,
   } = useSynapse();
 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const querySwarmId = searchParams.get('swarm');
+
+  const [importedJobs, setImportedJobs] = useState([]);
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [timelineOpen, setTimelineOpen] = useState(false);
   const [activeEdges, setActiveEdges] = useState(new Set());
@@ -81,6 +114,48 @@ export default function Observatory() {
   const [showCustomInput, setShowCustomInput] = useState(false);
   const logEndRef = useRef(null);
   const customInputRef = useRef(null);
+
+  // Fetch imported jobs
+  useEffect(() => {
+    async function fetchJobs() {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/import/jobs`);
+        if (res.ok) {
+          const data = await res.json();
+          setImportedJobs(data.jobs || []);
+        }
+      } catch (err) {
+        console.error('Failed to fetch imported jobs', err);
+      }
+    }
+    fetchJobs();
+    const interval = setInterval(fetchJobs, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const combinedScenarios = useMemo(() => {
+    const combined = { ...scenarios };
+    importedJobs.forEach(job => {
+      if (job.status === 'running' || job.status === 'completed' || job.status === 'stopped') {
+        combined[job.swarm_id] = {
+          id: job.swarm_id,
+          title: `Imported ${job.source_type.toUpperCase()}`,
+          icon: job.source_type === 'n8n' ? '⚙️' : '🐙',
+          description: `Imported from ${job.source_url}`,
+          steps: [],
+          isImported: true,
+        };
+      }
+    });
+    return combined;
+  }, [scenarios, importedJobs]);
+
+  const activeSwarmId = useMemo(() => {
+    if (querySwarmId && combinedScenarios[querySwarmId]) {
+      return querySwarmId;
+    }
+    return scenarioRunning || 'demo';
+  }, [querySwarmId, combinedScenarios, scenarioRunning]);
 
   // Track which edges are active based on agent statuses + handoffs
   useEffect(() => {
@@ -93,7 +168,8 @@ export default function Observatory() {
     const edgeSet = new Set();
     
     // Light edges for processing agents
-    AGENT_EDGES.forEach(e => {
+    const combinedEdges = [...AGENT_EDGES, ...knownEdges];
+    combinedEdges.forEach(e => {
       if (processing.has(e.source) || processing.has(e.target)) {
         edgeSet.add(`${e.source}-${e.target}`);
       }
@@ -106,7 +182,7 @@ export default function Observatory() {
     });
     
     setActiveEdges(edgeSet);
-  }, [agentStatuses, activeHandoffs]);
+  }, [agentStatuses, activeHandoffs, knownEdges]);
 
   // Open timeline when scenario starts
   useEffect(() => {
@@ -127,12 +203,17 @@ export default function Observatory() {
 
   // Handle scenario button click — routes to real AI or simulation
   const handleRunScenario = useCallback((scenarioId) => {
+    if (combinedScenarios[scenarioId]?.isImported) {
+      setSearchParams({ swarm: scenarioId });
+      return;
+    }
     if (engineMode === 'ai') {
       runLiveScenario(scenarioId);
     } else {
       runScenario(scenarioId);
     }
-  }, [engineMode, runLiveScenario, runScenario]);
+    setSearchParams({ swarm: scenarioId });
+  }, [engineMode, runLiveScenario, runScenario, combinedScenarios, setSearchParams]);
 
   // Handle custom prompt submission
   const handleCustomPrompt = useCallback(() => {
@@ -148,16 +229,39 @@ export default function Observatory() {
   }, []);
 
   const rfNodes = useMemo(() => {
-    return Object.entries(agentStatuses).map(([id, agent]) => ({
-      id,
-      type: 'agentNode',
-      position: AGENT_POSITIONS[id] || { x: 400, y: 300 },
-      data: { agent, onClick: handleNodeClick },
-    }));
+    let dynamicIndex = 0;
+    return Object.entries(agentStatuses).map(([id, agent]) => {
+      let position = AGENT_POSITIONS[id];
+      if (!position) {
+        position = { 
+          x: 50 + (dynamicIndex % 4) * 250, 
+          y: 750 + Math.floor(dynamicIndex / 4) * 200 
+        };
+        dynamicIndex++;
+      }
+      return {
+        id,
+        type: 'agentNode',
+        position,
+        data: { agent, onClick: handleNodeClick },
+      };
+    });
   }, [agentStatuses, handleNodeClick]);
 
   const rfEdges = useMemo(() => {
-    return AGENT_EDGES.map(e => {
+    const allEdgesMap = new Map();
+    // Add predefined edges
+    AGENT_EDGES.forEach(e => {
+      allEdgesMap.set(`${e.source}-${e.target}`, e);
+    });
+    // Add dynamic discovered edges
+    knownEdges.forEach(e => {
+      if (!allEdgesMap.has(`${e.source}-${e.target}`)) {
+        allEdgesMap.set(`${e.source}-${e.target}`, e);
+      }
+    });
+
+    return Array.from(allEdgesMap.values()).map(e => {
       const edgeId = `${e.source}-${e.target}`;
       const isActive = activeEdges.has(edgeId);
       return {
@@ -189,10 +293,12 @@ export default function Observatory() {
         },
       };
     });
-  }, [activeEdges]);
+  }, [activeEdges, knownEdges]);
 
   const [nodes, setNodes, onNodesChange] = useNodesState(rfNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(rfEdges);
+
+  const [liveAgentCount, setLiveAgentCount] = useState(0);
 
   // Sync nodes/edges with real-time state
   useEffect(() => {
@@ -217,7 +323,7 @@ export default function Observatory() {
   }, [scenarioRunning]);
   
   const displayScenarioId = scenarioRunning || lastScenarioId;
-  const activeScenario = displayScenarioId ? scenarios[displayScenarioId] : null;
+  const activeScenario = displayScenarioId ? combinedScenarios[displayScenarioId] : null;
   const timelineEntries = useMemo(() => {
     if (!activeScenario) return [];
     return activeScenario.steps.map((step, i) => ({
@@ -233,12 +339,13 @@ export default function Observatory() {
   }, [pendingApprovals]);
 
   // Check if API key is set
-  const hasApiKey = !!localStorage.getItem('geminiApiKey');
+  const hasApiKey = !!(localStorage.getItem('geminiApiKey') || import.meta.env.VITE_GEMINI_API_KEY);
 
   return (
-    <div className="w-full h-full relative overflow-hidden flex flex-col bg-transparent">
+    <ErrorBoundary>
+      <div className="w-full h-full relative overflow-hidden flex flex-col bg-transparent">
 
-      {/* ── Scenario Launcher Bar ── */}
+        {/* ── Scenario Launcher Bar ── */}
       <div className={styles.scenarioBar}>
         {/* Left Section: Title & Scenario Cards */}
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap flex-1 min-w-0">
@@ -279,6 +386,42 @@ export default function Observatory() {
             </button>
           </div>
         </div>
+        <div className="w-px h-6 bg-black/10 dark:bg-white/10" />
+
+        <div className="flex overflow-x-auto hide-scrollbar gap-2 max-w-[60vw]">
+          {Object.entries(combinedScenarios).map(([id, scenario]) => (
+            <button
+              key={id}
+              onClick={() => handleRunScenario(id)}
+              disabled={!!scenarioRunning && scenarioRunning !== id && !scenario.isImported}
+              className={`${styles.scenarioCard} ${
+                activeSwarmId === id ? styles.scenarioCardActive : ''
+              } ${scenarioRunning && scenarioRunning !== id && !scenario.isImported ? styles.scenarioCardDisabled : ''}`}
+            >
+              <span className="text-base">{scenario.icon}</span>
+              <span className="truncate max-w-[120px]">{scenario.title}</span>
+              {scenarioRunning === id && !scenario.isImported && (
+                <div className="w-3 h-3 border-2 border-cyan-500 border-t-transparent animate-spin rounded-full shrink-0" />
+              )}
+              {(!scenarioRunning || scenario.isImported) && activeSwarmId !== id && <Play size={12} className="opacity-40 shrink-0" />}
+              {activeSwarmId === id && <Eye size={12} className="text-cyan-500 shrink-0" />}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Custom Prompt Button (NEW) ── */}
+        <button
+          onClick={() => setShowCustomInput(!showCustomInput)}
+          disabled={!!scenarioRunning || engineMode !== 'ai'}
+          className={`${styles.scenarioCard} ${showCustomInput ? styles.scenarioCardActive : ''} ${engineMode !== 'ai' ? 'opacity-40 cursor-not-allowed' : ''}`}
+          title={engineMode !== 'ai' ? 'Switch to LIVE AI mode to use custom prompts' : 'Ask agents anything'}
+        >
+          <Sparkles size={14} className="text-amber-400" />
+          <span>Custom</span>
+        </button>
+
+        {/* ── Engine Mode Toggle + Status ── */}
+        <div className="ml-auto flex items-center gap-3">
 
         {/* ── Right Section: Engine Mode Toggle + Status ── */}
         <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap ml-auto justify-end shrink-0">
@@ -371,7 +514,9 @@ export default function Observatory() {
           )}
           <div className="flex items-center gap-1.5 text-[11px] font-mono text-black/50 dark:text-white/50 shrink-0">
             <div className="w-2 h-2 bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)]" />
-            {Object.values(agentStatuses).filter(a => a.status !== 'offline').length} online
+            {viewMode === 'live' 
+              ? liveAgentCount
+              : Object.values(agentStatuses).filter(a => a.status !== 'offline').length} online
           </div>
         </div>
       </div>
@@ -425,7 +570,7 @@ export default function Observatory() {
       {/* ── Main Content Area ── */}
       {viewMode === 'live' ? (
         <div className="flex-1 w-full h-full bg-transparent overflow-hidden">
-          <LiveSwarmView />
+          <LiveSwarmView activeSwarmId={activeSwarmId} setLiveAgentCount={setLiveAgentCount} />
         </div>
       ) : (
         <div className={`flex-1 relative ${styles.canvas}`}>
@@ -467,6 +612,7 @@ export default function Observatory() {
           />
         </div>
       )}
-    </div>
+      </div>
+    </ErrorBoundary>
   );
 }

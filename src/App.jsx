@@ -11,6 +11,7 @@ import Observatory from './views/Observatory';
 
 import CommandCenter from './views/CommandCenter';
 import SettingsPage from './views/SettingsPage'; 
+import ImportPage from './views/ImportPage';
 import NeuralCorePage from './views/NeuralCorePage';
 import SupportPage from './views/SupportPage';
 import './framer-styles.css';
@@ -69,6 +70,7 @@ function AppContent() {
         <Route path="settings" element={<SettingsPage />} />
         <Route path="ai-builder" element={<NeuralCorePage />} />
         <Route path="support" element={<SupportPage />} />
+        <Route path="import" element={<ImportPage />} />
       </Route>
       
       {/* Fallback */}

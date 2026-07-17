@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════
-// LIVE SWARM VIEW — Inlined from backend/synapse-observatory/client
+// LIVE SWARM VIEW
 // Displays real-time agent swarm telemetry, topology, events,
 // cost tracking, alerts, and emergency controls.
 // Connects via Socket.IO to the backend server.
@@ -12,7 +12,7 @@ import {
   Brain, Activity, AlertTriangle, DollarSign, Wifi, WifiOff, Zap,
   Cpu, Clock, Crosshair, RotateCcw, Radio, BarChart3,
   StopCircle, ShieldAlert, Wrench, PlayCircle, Skull, X, TrendingUp,
-  Shield, Eye, Info,
+  Shield, Eye, Loader2,
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
@@ -20,13 +20,12 @@ import {
 import './LiveSwarmView.css';
 
 // ═══════════════════════════════════════
-// Sub-components (inlined for simplicity)
+// Sub-components & Helpers
 // ═══════════════════════════════════════
-
-const AGENT_ORDER = ['alpha', 'beta', 'gamma', 'delta'];
 
 const STATUS_COLORS = {
   running: { dot: 'green', text: '#10B981', label: 'RUNNING' },
+  processing: { dot: 'green', text: '#10B981', label: 'RUNNING' }, // Added processing map
   idle: { dot: 'green', text: '#10B981', label: 'IDLE' },
   warning: { dot: 'amber', text: '#F59E0B', label: 'WARNING' },
   critical: { dot: 'red', text: '#EF4444', label: 'CRITICAL' },
@@ -35,19 +34,18 @@ const STATUS_COLORS = {
 };
 
 const AGENT_ICONS = { alpha: '⍺', beta: 'β', gamma: 'γ', delta: 'δ' };
+const AGENT_COLORS_MAP = { alpha: '#3B82F6', beta: '#8B5CF6', gamma: '#10B981', delta: '#F59E0B' };
 
-const AGENT_COLORS_MAP = {
-  alpha: '#3B82F6', beta: '#8B5CF6', gamma: '#10B981', delta: '#F59E0B',
+const getAgentColor = (id, index) => {
+  if (AGENT_COLORS_MAP[id]) return AGENT_COLORS_MAP[id];
+  const palette = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EC4899', '#06B6D4', '#84CC16', '#F43F5E'];
+  return palette[index % palette.length];
 };
 
-const CHART_COLORS = {
-  alpha: { stroke: '#3B82F6', fill: 'rgba(59, 130, 246, 0.15)' },
-  beta: { stroke: '#8B5CF6', fill: 'rgba(139, 92, 246, 0.15)' },
-  gamma: { stroke: '#10B981', fill: 'rgba(16, 185, 129, 0.15)' },
-  delta: { stroke: '#F59E0B', fill: 'rgba(245, 158, 11, 0.15)' },
+const getAgentIcon = (id, index) => {
+  if (AGENT_ICONS[id]) return AGENT_ICONS[id];
+  return id.substring(0, 1).toUpperCase();
 };
-
-const AGENT_NAMES = { alpha: 'Alpha', beta: 'Beta', gamma: 'Gamma', delta: 'Delta' };
 
 const TYPE_STYLES = {
   INFO: { bg: 'rgba(59, 130, 246, 0.1)', text: '#60A5FA', border: 'rgba(59, 130, 246, 0.2)' },
@@ -138,7 +136,7 @@ function CostTracker({ totalCost, costColor, burnRatePerMin, systemHealth }) {
 }
 
 // ── Agent Card ──
-function AgentCard({ agent, onKill, onRestart, hrs }) {
+function AgentCard({ agent, onKill, onRestart, hrs, icon, color }) {
   const [hovered, setHovered] = useState(false);
 
   if (!agent) {
@@ -165,20 +163,22 @@ function AgentCard({ agent, onKill, onRestart, hrs }) {
     <div className={`${cardClass} p-4 relative group transition-all duration-300`} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       <div className="flex items-start justify-between mb-3 border-b border-black/10 pb-3">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-md border flex items-center justify-center text-base font-bold flex-shrink-0" style={{ borderColor: isKilled ? 'rgba(0,0,0,0.1)' : `${status.text}40`, background: isKilled ? 'rgba(0,0,0,0.05)' : `${status.text}10`, color: status.text }}>{AGENT_ICONS[agent.agentId]}</div>
+          <div className="w-8 h-8 rounded-md border flex items-center justify-center text-base font-bold flex-shrink-0" style={{ borderColor: isKilled ? 'rgba(0,0,0,0.1)' : `${color}40`, background: isKilled ? 'rgba(0,0,0,0.05)' : `${color}10`, color: color }}>
+            {icon}
+          </div>
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-bold text-gray-900 tracking-tight truncate">{agent.agentName}</h3>
+              <h3 className="text-sm font-bold text-gray-900 tracking-tight truncate" title={agent.agentName}>{agent.agentName}</h3>
               <span className={`swarm-status-dot ${status.dot}`} />
             </div>
             <div className="flex items-center gap-1.5 mt-0.5">
-              <span className="swarm-badge border border-black/10 bg-black/5 text-black/60 font-mono">{agent.model}</span>
+              <span className="swarm-badge border border-black/10 bg-black/5 text-black/60 font-mono">{agent.model || 'auto'}</span>
               <span className="swarm-badge border font-mono" style={{ borderColor: `${status.text}30`, background: `${status.text}10`, color: status.text }}>{status.label}</span>
             </div>
           </div>
         </div>
       </div>
-      <p className={`text-xs mb-3 leading-relaxed line-clamp-2 ${isRogue ? 'text-red-400 font-medium' : isCascade ? 'text-amber-400/80' : isPaused ? 'text-amber-600 font-medium' : 'text-gray-500 italic'}`}>{agent.currentTask}</p>
+      <p className={`text-xs mb-3 leading-relaxed line-clamp-2 ${isRogue ? 'text-red-400 font-medium' : isCascade ? 'text-amber-400/80' : isPaused ? 'text-amber-600 font-medium' : 'text-gray-500 italic'}`}>{agent.currentTask || 'Idle...'}</p>
       <div className="grid grid-cols-2 gap-2 mb-3">
         <div className="bg-black/5 border border-black/10 rounded-md p-2.5">
           <div className="text-[10px] text-gray-500 uppercase tracking-wider font-medium mb-1">Tokens</div>
@@ -186,7 +186,7 @@ function AgentCard({ agent, onKill, onRestart, hrs }) {
         </div>
         <div className="bg-black/5 border border-black/10 rounded-md p-2.5">
           <div className="text-[10px] text-gray-500 uppercase tracking-wider font-medium mb-1">Cost</div>
-          <p className={`text-sm font-bold font-mono ${agent.cumulativeCostUSD > 100 ? 'text-red-600' : agent.cumulativeCostUSD > 20 ? 'text-amber-600' : 'text-gray-900'}`}>${agent.cumulativeCostUSD?.toFixed(2) || '0.00'}</p>
+          <p className={`text-sm font-bold font-mono ${agent.costUSD > 100 ? 'text-red-600' : agent.costUSD > 20 ? 'text-amber-600' : 'text-gray-900'}`}>${agent.costUSD?.toFixed(2) || agent.cumulativeCostUSD?.toFixed(2) || '0.00'}</p>
         </div>
         <div className="bg-black/5 border border-black/10 rounded-md p-2.5">
           <div className="text-[10px] text-gray-500 uppercase tracking-wider font-medium mb-1">Latency</div>
@@ -201,7 +201,7 @@ function AgentCard({ agent, onKill, onRestart, hrs }) {
         <div className="swarm-confidence-fill" style={{ width: `${(agent.confidenceScore || 0) * 100}%`, backgroundColor: confidenceColor }} />
       </div>
 
-      {/* ── HRS Gauge (3-Tier Hallucination Detection) ── */}
+      {/* ── HRS Gauge ── */}
       {hrs && (
         <div className="mb-3 bg-black/[0.03] border border-black/10 rounded-md p-2.5">
           <div className="flex items-center justify-between mb-1.5">
@@ -227,26 +227,11 @@ function AgentCard({ agent, onKill, onRestart, hrs }) {
                 : 'linear-gradient(90deg, #10b981, #059669)',
             }} />
           </div>
-          {hrs.level !== 'nominal' && hrs.tiers?.t1?.breakdown && (
-            <div className="mt-1.5 space-y-0.5">
-              {Object.entries(hrs.tiers.t1.breakdown).slice(0, 3).map(([key, val]) => (
-                val.label !== 'NORMAL' && val.label !== 'STABLE' && (
-                  <div key={key} className="flex items-center justify-between">
-                    <span className="text-[9px] font-mono text-gray-500 capitalize">{key}</span>
-                    <span className={`text-[9px] font-bold font-mono ${
-                      val.label === 'CRITICAL' || val.label === 'RUNAWAY' || val.label === 'COLLAPSE' || val.label === 'LOOP DETECTED' ? 'text-red-500'
-                      : val.label === 'HIGH' || val.label === 'ELEVATED' || val.label === 'DROPPING' ? 'text-amber-500'
-                      : 'text-gray-500'
-                    }`}>{val.label}</span>
-                  </div>
-                )
-              ))}
-            </div>
-          )}
         </div>
       )}
+      
       {agent.reasoningChain && agent.reasoningChain.length > 0 && (
-        <div className="space-y-1">
+        <div className="space-y-1 mt-2">
           {agent.reasoningChain.slice(-3).map((step, i) => (
             <div key={i} className="flex items-start gap-1.5">
               <span className="text-[9px] text-gray-700 font-mono mt-0.5 flex-shrink-0">{String(i + 1).padStart(2, '0')}</span>
@@ -278,34 +263,70 @@ const TOPO_LINKS = [
   { from: 'beta', to: 'gamma' },
   { from: 'gamma', to: 'delta' },
 ];
-const STATUS_FILL = { running: '#10B981', idle: '#10B981', warning: '#F59E0B', critical: '#EF4444', killed: '#374151' };
+const STATUS_FILL = { running: '#10B981', processing: '#10B981', idle: '#10B981', warning: '#F59E0B', critical: '#EF4444', killed: '#374151' };
 
-function SwarmTopology({ agents, selectedAgent, setSelectedAgent }) {
-  const nodeData = useMemo(() => TOPO_NODES.map(node => {
-    const agent = agents[node.id];
-    const status = agent?.status || 'idle';
-    const isSelected = selectedAgent === node.id;
-    const isDimmed = selectedAgent !== null && !isSelected;
-    return { ...node, status, agent, isSelected, isDimmed };
-  }), [agents, selectedAgent]);
+function SwarmTopology({ agents, agentKeys, selectedAgent, setSelectedAgent, activeSwarmId }) {
+  const isDemo = activeSwarmId === 'demo' || (agentKeys.includes('alpha') && agentKeys.includes('beta'));
 
-  const linkData = useMemo(() => TOPO_LINKS.map(link => {
-    const fromAgent = agents[link.from];
-    const toAgent = agents[link.to];
-    const fromStatus = fromAgent?.status || 'idle';
-    const toStatus = toAgent?.status || 'idle';
-    let color = '#10B981', lineClass = 'swarm-flow-line';
-    if (fromStatus === 'killed' || toStatus === 'killed') { color = '#374151'; lineClass = 'swarm-flow-line-stopped'; }
-    else if (fromStatus === 'critical') { color = '#EF4444'; lineClass = 'swarm-flow-line-fast'; }
-    else if (fromStatus === 'warning' || toStatus === 'warning') { color = '#F59E0B'; }
-    const fromNode = TOPO_NODES.find(n => n.id === link.from);
-    const toNode = TOPO_NODES.find(n => n.id === link.to);
-    return { ...link, color, lineClass, x1: fromNode.x + 38, y1: fromNode.y, x2: toNode.x - 38, y2: toNode.y };
-  }), [agents]);
+  const nodeData = useMemo(() => {
+    if (isDemo && agentKeys.length <= 4) {
+      return TOPO_NODES.map((node, i) => {
+        const agent = agents[node.id];
+        const status = agent?.status || 'idle';
+        return { ...node, status, agent, isSelected: selectedAgent === node.id, isDimmed: selectedAgent !== null && selectedAgent !== node.id };
+      });
+    } else {
+      // Dynamic Layout
+      return agentKeys.map((id, i) => {
+        const agent = agents[id];
+        const status = agent?.status || 'idle';
+        return {
+          id,
+          label: getAgentIcon(id, i),
+          name: agent.agentName || id,
+          x: 100 + (i % 5) * 160,
+          y: 80 + Math.floor(i / 5) * 120,
+          status, agent, isSelected: selectedAgent === id, isDimmed: selectedAgent !== null && selectedAgent !== id
+        };
+      });
+    }
+  }, [agents, agentKeys, selectedAgent, isDemo]);
+
+  const linkData = useMemo(() => {
+    if (isDemo) {
+      return TOPO_LINKS.map(link => {
+        const fromAgent = agents[link.from];
+        const toAgent = agents[link.to];
+        const fromStatus = fromAgent?.status || 'idle';
+        const toStatus = toAgent?.status || 'idle';
+        let color = '#10B981', lineClass = 'swarm-flow-line';
+        if (fromStatus === 'killed' || toStatus === 'killed') { color = '#374151'; lineClass = 'swarm-flow-line-stopped'; }
+        else if (fromStatus === 'critical') { color = '#EF4444'; lineClass = 'swarm-flow-line-fast'; }
+        else if (fromStatus === 'warning' || toStatus === 'warning') { color = '#F59E0B'; }
+        const fromNode = TOPO_NODES.find(n => n.id === link.from);
+        const toNode = TOPO_NODES.find(n => n.id === link.to);
+        return { ...link, color, lineClass, x1: fromNode?.x + 38, y1: fromNode?.y, x2: toNode?.x - 38, y2: toNode?.y };
+      });
+    }
+    // For non-demo swarms, we draw simple links between consecutive agents for now
+    const links = [];
+    for (let i = 0; i < nodeData.length - 1; i++) {
+      const fromNode = nodeData[i];
+      const toNode = nodeData[i + 1];
+      const color = (fromNode.status === 'killed' || toNode.status === 'killed') ? '#374151'
+        : fromNode.status === 'critical' ? '#EF4444' : '#10B981';
+      const lineClass = color === '#374151' ? 'swarm-flow-line-stopped' : color === '#EF4444' ? 'swarm-flow-line-fast' : 'swarm-flow-line';
+      links.push({ from: fromNode.id, to: toNode.id, color, lineClass, x1: fromNode.x + 38, y1: fromNode.y, x2: toNode.x - 38, y2: toNode.y });
+    }
+    return links;
+  }, [agents, nodeData, isDemo]);
+
+  const maxRows = Math.max(1, Math.ceil(nodeData.length / 5));
+  const svgHeight = isDemo ? 160 : Math.max(160, maxRows * 120 + 40);
 
   return (
-    <div className="swarm-glass-card p-5 rounded-lg">
-      <svg viewBox="0 0 860 160" className="w-full" style={{ maxHeight: '160px' }}>
+    <div className="swarm-glass-card p-5 rounded-lg overflow-x-auto">
+      <svg viewBox={`0 0 ${Math.max(860, Math.min(nodeData.length, 5) * 160 + 50)} ${svgHeight}`} className="w-full" style={{ minHeight: `${svgHeight}px` }}>
         <defs>
           <marker id="swarmArrowGreen" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#10B981" opacity="0.5" /></marker>
           <marker id="swarmArrowRed" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#EF4444" opacity="0.7" /></marker>
@@ -321,7 +342,7 @@ function SwarmTopology({ agents, selectedAgent, setSelectedAgent }) {
             </g>
           );
         })}
-        {nodeData.map(node => {
+        {nodeData.map((node, i) => {
           const fill = STATUS_FILL[node.status] || STATUS_FILL.idle;
           const isRogue = node.status === 'critical';
           const isKilled = node.status === 'killed';
@@ -329,7 +350,7 @@ function SwarmTopology({ agents, selectedAgent, setSelectedAgent }) {
             <g key={node.id} onClick={() => setSelectedAgent(node.isSelected ? null : node.id)} style={{ cursor: 'pointer', transition: 'opacity 0.2s' }} opacity={node.isDimmed ? 0.3 : 1} className="hover:opacity-100">
               {!isKilled && <circle cx={node.x} cy={node.y} r="42" fill="none" stroke={fill} strokeWidth="1" opacity={isRogue ? 0.4 : 0.15} className={isRogue ? 'swarm-node-rogue' : ''} />}
               <circle cx={node.x} cy={node.y} r="32" fill={`${fill}20`} stroke={fill} strokeWidth="2" className={!isKilled && !isRogue ? 'swarm-node-pulse' : isRogue ? 'swarm-node-rogue' : ''} />
-              <text x={node.x} y={node.y + 1} textAnchor="middle" dominantBaseline="central" fill={isKilled ? '#6B7280' : '#000000'} fontSize="16" fontWeight="700" fontFamily="Inter, sans-serif">{node.label[0]}</text>
+              <text x={node.x} y={node.y + 1} textAnchor="middle" dominantBaseline="central" fill={isKilled ? '#6B7280' : '#000000'} fontSize="16" fontWeight="700" fontFamily="Inter, sans-serif">{node.label}</text>
               <text x={node.x} y={node.y + 50} textAnchor="middle" fill={isKilled ? '#6B7280' : '#4B5563'} fontSize="10" fontWeight="500" fontFamily="Inter, sans-serif">{node.name}</text>
               <text x={node.x} y={node.y + 63} textAnchor="middle" fill={fill} fontSize="8" fontWeight="600" fontFamily="Inter, sans-serif" letterSpacing="0.5">{node.status.toUpperCase()}</text>
             </g>
@@ -369,14 +390,14 @@ function EventFeed({ events, selectedAgent, setSelectedAgent }) {
         {events.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-700 text-xs">Waiting for events...</div>
         ) : (
-          events.filter(e => !selectedAgent || e.agent === selectedAgent).map(event => {
+          events.filter(e => !selectedAgent || e.agent === selectedAgent).map((event, index) => {
             const typeStyle = TYPE_STYLES[event.type] || TYPE_STYLES.INFO;
-            const agentColor = AGENT_COLORS_MAP[event.agent] || '#6B7280';
+            const agentColor = getAgentColor(event.agent, Object.keys(AGENT_COLORS_MAP).indexOf(event.agent) > -1 ? Object.keys(AGENT_COLORS_MAP).indexOf(event.agent) : index) || '#6B7280';
             const isCritical = event.type === 'CRITICAL';
             return (
               <div key={event.id} className={`swarm-event-row py-2 px-2 flex items-start gap-2 border-b border-black/5 hover:bg-black/5 transition-colors ${isCritical ? 'bg-red-50 hover:bg-red-100' : ''}`}>
                 <span className="text-[10px] font-mono text-gray-500 flex-shrink-0 mt-0.5 w-[58px]">{formatTime(event.timestamp)}</span>
-                {event.agent && <span className="text-[9px] font-bold uppercase tracking-wider flex-shrink-0 mt-0.5 w-[38px] text-center" style={{ color: agentColor }}>{event.agent}</span>}
+                {event.agent && <span className="text-[9px] font-bold uppercase tracking-wider flex-shrink-0 mt-0.5 w-[38px] text-center truncate" style={{ color: agentColor }} title={event.agent}>{event.agent.substring(0,6)}</span>}
                 <span className="swarm-badge flex-shrink-0 mt-0.5" style={{ background: typeStyle.bg, color: typeStyle.text, border: `1px solid ${typeStyle.border}`, fontSize: '8px' }}>{event.type}</span>
                 <p className={`text-[11px] leading-relaxed flex-1 min-w-0 ${isCritical ? 'text-red-600 font-medium' : 'text-gray-700'}`}>{event.description}</p>
               </div>
@@ -389,7 +410,7 @@ function EventFeed({ events, selectedAgent, setSelectedAgent }) {
 }
 
 // ── Metrics Chart ──
-function CustomTooltip({ active, payload, label }) {
+function CustomTooltip({ active, payload, label, agents }) {
   if (!active || !payload || payload.length === 0) return null;
   return (
     <div className="p-3 border shadow-sm rounded-none" style={{ background: 'rgba(255,255,255,1)', borderColor: 'rgba(0,0,0,0.1)' }}>
@@ -399,7 +420,7 @@ function CustomTooltip({ active, payload, label }) {
           <div key={entry.dataKey} className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-none" style={{ background: entry.color }} />
-              <span className="text-[11px] text-gray-500">{AGENT_NAMES[entry.dataKey]}</span>
+              <span className="text-[11px] text-gray-500">{agents[entry.dataKey]?.agentName || entry.dataKey}</span>
             </div>
             <span className="text-[11px] font-mono font-bold text-gray-900">{entry.value?.toLocaleString() || 0}</span>
           </div>
@@ -409,7 +430,16 @@ function CustomTooltip({ active, payload, label }) {
   );
 }
 
-function MetricsChart({ tokenHistory }) {
+function MetricsChart({ tokenHistory, agentKeys, agents }) {
+  const chartColors = useMemo(() => {
+    const colors = {};
+    agentKeys.forEach((id, i) => {
+      const stroke = getAgentColor(id, i);
+      colors[id] = { stroke, fill: `${stroke}25` }; 
+    });
+    return colors;
+  }, [agentKeys]);
+
   const chartData = useMemo(() => {
     if (!tokenHistory || tokenHistory.length === 0) return [];
     const sampled = [];
@@ -433,18 +463,18 @@ function MetricsChart({ tokenHistory }) {
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
               <defs>
-                {Object.entries(CHART_COLORS).map(([id, colors]) => (
+                {agentKeys.map(id => (
                   <linearGradient key={id} id={`swarm-grad-${id}`} x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={colors.stroke} stopOpacity={0.25} />
-                    <stop offset="100%" stopColor={colors.stroke} stopOpacity={0.02} />
+                    <stop offset="0%" stopColor={chartColors[id]?.stroke} stopOpacity={0.25} />
+                    <stop offset="100%" stopColor={chartColors[id]?.stroke} stopOpacity={0.02} />
                   </linearGradient>
                 ))}
               </defs>
               <XAxis dataKey="timeLabel" tick={{ fontSize: 10, fill: 'rgba(0,0,0,0.4)' }} axisLine={{ stroke: 'rgba(0,0,0,0.05)' }} tickLine={false} interval="preserveStartEnd" minTickGap={40} />
               <YAxis tick={{ fontSize: 10, fill: 'rgba(0,0,0,0.4)' }} axisLine={{ stroke: 'rgba(0,0,0,0.05)' }} tickLine={false} width={45} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v} />
-              <Tooltip content={<CustomTooltip />} />
-              {Object.entries(CHART_COLORS).map(([id, colors]) => (
-                <Area key={id} type="monotone" dataKey={id} stroke={colors.stroke} fill={`url(#swarm-grad-${id})`} strokeWidth={1.5} dot={false} isAnimationActive={false} />
+              <Tooltip content={<CustomTooltip agents={agents} />} />
+              {agentKeys.map(id => (
+                <Area key={id} type="monotone" dataKey={id} stroke={chartColors[id]?.stroke} fill={`url(#swarm-grad-${id})`} strokeWidth={1.5} dot={false} isAnimationActive={false} />
               ))}
             </AreaChart>
           </ResponsiveContainer>
@@ -480,7 +510,7 @@ function MaintenancePanel({ agents, resumeAgent }) {
 }
 
 // ── Kill Switch ──
-function KillSwitch({ killAll, restartAll, allKilled, systemHealth, triggerRogue }) {
+function KillSwitch({ killAll, restartAll, allKilled, systemHealth, triggerRogue, isDemo }) {
   const [flashActive, setFlashActive] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const isCritical = systemHealth === 'critical';
@@ -506,7 +536,7 @@ function KillSwitch({ killAll, restartAll, allKilled, systemHealth, triggerRogue
       <div className="flex flex-col gap-5">
         <div className="flex items-center justify-between border-b border-black/10 pb-3">
           <div className="flex items-center gap-2"><ShieldAlert size={16} className={isCritical ? 'text-red-600' : 'text-black/60'} /><h3 className="text-sm font-semibold tracking-tight text-black">Emergency Controls</h3></div>
-          <button onClick={triggerRogue} className="flex items-center gap-1 text-[10px] uppercase font-bold text-gray-400 hover:text-amber-500 transition-colors" title="Trigger rogue event"><Zap size={12} />Demo: Force Cascade</button>
+          {isDemo && <button onClick={triggerRogue} className="flex items-center gap-1 text-[10px] uppercase font-bold text-gray-400 hover:text-amber-500 transition-colors" title="Trigger rogue event"><Zap size={12} />Demo: Force Cascade</button>}
         </div>
         <div className="w-full">
           {!allKilled ? (
@@ -531,7 +561,7 @@ function HallucinationAlert({ alerts, agents, systemStatus, killAgent, killAll, 
   const [dismissed, setDismissed] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const rogueAgent = Object.values(agents).find(a => a.status === 'critical');
-  const cascadeAgent = Object.values(agents).find(a => a.agentId === 'delta' && a.status === 'warning');
+  const cascadeAgent = Object.values(agents).find(a => a.status === 'warning');
   const hallucinationAlert = alerts.find(a => a.type === 'hallucination');
   const shouldShow = hallucinationAlert && rogueAgent && !dismissed;
 
@@ -549,7 +579,7 @@ function HallucinationAlert({ alerts, agents, systemStatus, killAgent, killAll, 
           <div className="w-12 h-12 rounded-lg border border-red-500/20 bg-red-500/10 flex items-center justify-center flex-shrink-0 mt-0.5"><Skull size={24} className="text-red-500 animate-pulse" /></div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-2"><AlertTriangle size={16} className="text-red-600" /><h2 className="text-base font-bold text-red-600 tracking-wide">HALLUCINATION CASCADE DETECTED</h2></div>
-            <p className="text-sm text-gray-700 leading-relaxed mb-3"><strong className="text-red-600">Agent Gamma (Decision Agent)</strong> has entered an infinite reasoning loop.{cascadeAgent && <span> <strong className="text-amber-600">Agent Delta (Execution Agent)</strong> is receiving corrupted data.</span>}</p>
+            <p className="text-sm text-gray-700 leading-relaxed mb-3"><strong className="text-red-600">{rogueAgent.agentName}</strong> has entered an infinite reasoning loop.{cascadeAgent && <span> <strong className="text-amber-600">{cascadeAgent.agentName}</strong> is receiving corrupted data.</span>}</p>
             <div className="flex flex-wrap gap-4 mb-4">
               <div className="bg-white/80 border border-red-500/20 rounded-lg px-4 py-3"><p className="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5 font-medium">Confidence</p><p className="text-xl font-bold font-mono text-red-600">{((rogueAgent?.confidenceScore || 0.18) * 100).toFixed(0)}%</p></div>
               <div className="bg-white/80 border border-red-500/20 rounded-lg px-4 py-3"><p className="text-[10px] text-gray-500 uppercase tracking-wider mb-0.5 font-medium">Burn Rate</p><p className="text-xl font-bold font-mono text-red-600">${burnRate.toFixed(2)}/sec</p></div>
@@ -744,7 +774,7 @@ function HrsInfoModal({ onClose }) {
 }
 
 // ── HRS Detection Panel ──
-function HrsDetectionPanel({ hrsScores, agents, onShowInfo }) {
+function HrsDetectionPanel({ hrsScores, agents, agentKeys }) {
   const scores = Object.values(hrsScores);
   if (scores.length === 0) return null;
 
@@ -777,8 +807,8 @@ function HrsDetectionPanel({ hrsScores, agents, onShowInfo }) {
           </span>
         </div>
       </div>
-      <div className="grid grid-cols-4 gap-3">
-        {AGENT_ORDER.map(id => {
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+        {agentKeys.map(id => {
           const hrs = hrsScores[id];
           const agent = agents[id];
           if (!hrs || !agent) return (
@@ -794,7 +824,7 @@ function HrsDetectionPanel({ hrsScores, agents, onShowInfo }) {
               : 'bg-black/[0.03] border-black/10'
             }`}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-gray-900">{AGENT_NAMES[id]}</span>
+                <span className="text-xs font-bold text-gray-900">{agent.agentName || id}</span>
                 <span className={`text-xs font-bold font-mono ${
                   hrs.level === 'critical' ? 'text-red-600' : hrs.level === 'high' ? 'text-orange-600' : hrs.level === 'warning' ? 'text-amber-600' : 'text-emerald-600'
                 }`}>{(hrs.hrs * 100).toFixed(0)}%</span>
@@ -826,26 +856,41 @@ function HrsDetectionPanel({ hrsScores, agents, onShowInfo }) {
 // ═══════════════════════════════════════════════════════════
 // MAIN LIVE SWARM VIEW
 // ═══════════════════════════════════════════════════════════
-export default function LiveSwarmView() {
+export default function LiveSwarmView({ activeSwarmId, setLiveAgentCount }) {
   const {
-    agents, events, alerts, tokenHistory, hrsScores, systemStatus, isConnected,
+    swarms, agents, events, alerts, tokenHistory, hrsScores, systemStatus, isConnected, isWaitingForEvent,
     killAgent, killAll, restartAgent, restartAll, resumeAgent, triggerRogue, dismissAlert, clearAlerts,
-  } = useSwarmSocket();
+  } = useSwarmSocket(activeSwarmId);
 
-  const [showHrsInfo, setShowHrsInfo] = useState(false);
-
-  const agentList = AGENT_ORDER.map(id => agents[id]).filter(Boolean);
+  const agentKeys = Object.keys(agents);
+  const agentList = Object.values(agents);
   const activeAgentCount = agentList.filter(a => a.status !== 'killed').length;
+
+  useEffect(() => {
+    if (setLiveAgentCount) setLiveAgentCount(activeAgentCount);
+  }, [activeAgentCount, setLiveAgentCount]);
+
   const activeAlertCount = systemStatus.alertCount || 0;
+  
   const totalTokensFormatted = systemStatus.totalTokens >= 1000000
     ? `${(systemStatus.totalTokens / 1000000).toFixed(1)}M`
     : systemStatus.totalTokens >= 1000
     ? `${(systemStatus.totalTokens / 1000).toFixed(1)}K`
     : String(systemStatus.totalTokens || 0);
+  
   const totalCost = systemStatus.totalCost || 0;
   const costColor = totalCost > 200 ? '#EF4444' : totalCost > 50 ? '#F59E0B' : '#10B981';
   const allKilled = agentList.length > 0 && agentList.every(a => a.status === 'killed');
   const [selectedAgent, setSelectedAgent] = useState(null);
+
+  if (isWaitingForEvent) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 gap-4">
+        <Loader2 size={32} className="animate-spin text-cyan-500" />
+        <div className="text-sm font-medium">Waiting for first telemetry event for swarm <span className="font-mono text-xs ml-1 font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded">{activeSwarmId}</span>...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-full w-full bg-transparent overflow-y-auto">
@@ -855,33 +900,33 @@ export default function LiveSwarmView() {
         {/* Stats Row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <StatCard icon={Zap} label="Total Tokens" value={totalTokensFormatted} color="#8B5CF6" subtext="Cumulative across all agents" />
-          <StatCard icon={Activity} label="Active Agents" value={`${activeAgentCount} / 4`} color={activeAgentCount === 4 ? '#10B981' : activeAgentCount > 0 ? '#F59E0B' : '#EF4444'} subtext={allKilled ? 'Swarm terminated' : 'Agents online'} />
+          <StatCard icon={Activity} label="Active Agents" value={`${activeAgentCount} / ${agentKeys.length}`} color={activeAgentCount === agentKeys.length && agentKeys.length > 0 ? '#10B981' : activeAgentCount > 0 ? '#F59E0B' : '#EF4444'} subtext={allKilled ? 'Swarm terminated' : 'Agents online'} />
           <StatCard icon={AlertTriangle} label="Active Alerts" value={String(activeAlertCount)} color={activeAlertCount > 0 ? '#EF4444' : '#10B981'} subtext={activeAlertCount > 0 ? 'Action required' : 'No active alerts'} />
           <CostTracker totalCost={totalCost} costColor={costColor} burnRatePerMin={systemStatus.burnRatePerMin || 0} systemHealth={systemStatus.systemHealth} />
         </div>
 
         {/* Agent Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
-          {AGENT_ORDER.map(id => (<AgentCard key={id} agent={agents[id]} onKill={() => killAgent(id)} onRestart={() => restartAgent(id)} hrs={hrsScores[id]} />))}
+          {agentKeys.map((id, i) => (<AgentCard key={id} agent={agents[id]} onKill={() => killAgent(id)} onRestart={() => restartAgent(id)} hrs={hrsScores[id]} icon={getAgentIcon(id, i)} color={getAgentColor(id, i)} />))}
         </div>
 
         {/* HRS Detection Panel */}
-        <HrsDetectionPanel hrsScores={hrsScores} agents={agents} onShowInfo={() => setShowHrsInfo(true)} />
+        <HrsDetectionPanel hrsScores={hrsScores} agents={agents} agentKeys={agentKeys} />
 
         {/* Swarm Topology */}
-        <SwarmTopology agents={agents} selectedAgent={selectedAgent} setSelectedAgent={setSelectedAgent} />
+        {agentKeys.length > 0 && <SwarmTopology agents={agents} agentKeys={agentKeys} selectedAgent={selectedAgent} setSelectedAgent={setSelectedAgent} activeSwarmId={activeSwarmId} />}
 
         {/* Maintenance Panel */}
         <MaintenancePanel agents={agents} resumeAgent={resumeAgent} />
 
         {/* Bottom Section: Chart + Event Feed */}
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-3">
-          <div className="lg:col-span-3"><MetricsChart tokenHistory={tokenHistory} /></div>
+          <div className="lg:col-span-3"><MetricsChart tokenHistory={tokenHistory} agentKeys={agentKeys} agents={agents} /></div>
           <div className="lg:col-span-2"><EventFeed events={events} selectedAgent={selectedAgent} setSelectedAgent={setSelectedAgent} /></div>
         </div>
 
         {/* Kill Switch */}
-        <KillSwitch killAll={killAll} restartAll={restartAll} allKilled={allKilled} systemHealth={systemStatus.systemHealth} triggerRogue={triggerRogue} />
+        <KillSwitch killAll={killAll} restartAll={restartAll} allKilled={allKilled} systemHealth={systemStatus.systemHealth} triggerRogue={triggerRogue} isDemo={activeSwarmId === 'demo'} />
       </div>
     </div>
   );

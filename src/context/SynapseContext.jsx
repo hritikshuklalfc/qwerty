@@ -182,6 +182,7 @@ export function SynapseProvider({ children }) {
 
   // ── Agent handoff tracking ──
   const [activeHandoffs, setActiveHandoffs] = useState([]);
+  const [knownEdges, setKnownEdges] = useState([]);
 
   // ── Subscribe to simulator events ──
   useEffect(() => {
@@ -196,6 +197,11 @@ export function SynapseProvider({ children }) {
       }),
       simulator.on('agent-handoff', (handoff) => {
         setActiveHandoffs(prev => [...prev.slice(-19), handoff]);
+        setKnownEdges(prev => {
+          const edgeExists = prev.some(e => e.source === handoff.from && e.target === handoff.to);
+          if (!edgeExists) return [...prev, { source: handoff.from, target: handoff.to, label: 'Handoff' }];
+          return prev;
+        });
         // Auto-clear handoff highlight after 3 seconds
         setTimeout(() => {
           setActiveHandoffs(prev => prev.filter(h => h !== handoff));
@@ -269,9 +275,24 @@ export function SynapseProvider({ children }) {
     // ── Live Agent Handoffs ──
     socket.on('live:agent-handoff', (handoff) => {
       setActiveHandoffs(prev => [...prev.slice(-19), handoff]);
+      setKnownEdges(prev => {
+        const edgeExists = prev.some(e => e.source === handoff.from && e.target === handoff.to);
+        if (!edgeExists) return [...prev, { source: handoff.from, target: handoff.to, label: 'Handoff' }];
+        return prev;
+      });
       setTimeout(() => {
         setActiveHandoffs(prev => prev.filter(h => h !== handoff));
       }, 3000);
+    });
+
+    // ── Inject Imported Agents ──
+    socket.on('agent:update', (agentData) => {
+      if (!simulator.agents[agentData.agentId]) {
+        simulator.agents[agentData.agentId] = agentData;
+      } else {
+        Object.assign(simulator.agents[agentData.agentId], agentData);
+      }
+      setAgentStatuses(simulator.getAgentStatuses());
     });
 
     // ── Live Demo Steps (Timeline) ──
@@ -578,6 +599,7 @@ export function SynapseProvider({ children }) {
     scenarioRunning,
     demoSteps,
     activeHandoffs,
+    knownEdges,
 
     // Actions (original simulation)
     runScenario,

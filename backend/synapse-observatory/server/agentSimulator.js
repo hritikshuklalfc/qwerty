@@ -316,6 +316,7 @@ class AgentSimulator {
       this.costWindow = this.costWindow.filter(e => e.time > Date.now() - 10000);
 
       this.io.emit('agent:update', {
+        swarmId: 'demo',
         agentId: agent.agentId,
         agentName: agent.agentName,
         status: agent.status,
@@ -352,6 +353,7 @@ class AgentSimulator {
         if (hrsResult.shouldPause && !agent.isRogue && !agent.isCascading && agent.status !== 'paused' && agent.status !== 'killed') {
           this.pauseAgent(agentId, `HRS Auto-Pause: Score ${hrsResult.hrs} (${hrsResult.level})`);
           this.io.emit('alert:hallucination', {
+            swarmId: 'demo',
             agentId,
             agentName: agent.agentName,
             message: `Hallucination Risk Score ${hrsResult.hrs} exceeded auto-pause threshold. Detection tiers: ${hrsResult.activeTiers.join(', ')}. Accuracy: ${hrsResult.accuracy}.`,
@@ -393,6 +395,7 @@ class AgentSimulator {
         const message = messages[Math.floor(Math.random() * messages.length)];
 
         this.io.emit('agent:communication', {
+          swarmId: 'demo',
           from: link.from,
           fromName: fromAgent.agentName,
           to: link.to,
@@ -437,6 +440,7 @@ class AgentSimulator {
       else if (activeAgents < 4) systemHealth = 'degraded';
 
       this.io.emit('system:status', {
+        swarmId: 'demo',
         totalCost: parseFloat(this.totalCost.toFixed(2)),
         totalTokens: this.totalTokens,
         activeAgents,
@@ -463,6 +467,7 @@ class AgentSimulator {
     gamma.status = 'critical';
 
     this.io.emit('alert:hallucination', {
+      swarmId: 'demo',
       agentId: 'gamma',
       agentName: 'Decision Agent',
       message: 'Agent Gamma has entered an infinite reasoning loop. Producing unreliable outputs with critically low confidence.',
@@ -482,6 +487,7 @@ class AgentSimulator {
     setTimeout(() => {
       if (gamma.status === 'killed') return;
       this.io.emit('alert:cost-spike', {
+        swarmId: 'demo',
         agentId: 'gamma',
         agentName: 'Decision Agent',
         message: 'Token consumption exceeding safe limits. Cost rate: ~$5-10/sec. Projected: $47,000/hour at current burn rate.',
@@ -506,6 +512,7 @@ class AgentSimulator {
       delta.status = 'warning';
 
       this.io.emit('alert:cascade', {
+        swarmId: 'demo',
         agentId: 'delta',
         agentName: 'Execution Agent',
         source: 'gamma',
@@ -530,6 +537,7 @@ class AgentSimulator {
       this.pauseAgent('delta', 'Data Integrity Compromised / Cascading Failure');
       
       this.io.emit('alert:safeguard', {
+        swarmId: 'demo',
         message: 'Auto-Safeguard triggered. Rogue agents paused for maintenance.',
         timestamp: new Date().toISOString(),
       });
@@ -561,6 +569,7 @@ class AgentSimulator {
     }
 
     this.io.emit('agent:update', {
+      swarmId: 'demo',
       agentId: agent.agentId,
       agentName: agent.agentName,
       status: 'killed',
@@ -603,6 +612,7 @@ class AgentSimulator {
     }
 
     this.io.emit('agent:update', {
+      swarmId: 'demo',
       ...agent,
     });
 

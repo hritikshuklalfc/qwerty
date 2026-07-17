@@ -171,7 +171,7 @@ export function NeuralCore() {
     setIsThinking(true)
     
     try {
-      const apiKey = localStorage.getItem('geminiApiKey');
+      const apiKey = localStorage.getItem('geminiApiKey') || import.meta.env.VITE_GEMINI_API_KEY;
       if (!apiKey) {
         throw new Error("Gemini API Key is missing! Please go to the Settings menu on the sidebar to add your key.");
       }

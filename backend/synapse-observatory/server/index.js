@@ -293,6 +293,170 @@ app.post('/api/ai/validate-key', async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════
+// REST Endpoints — Agent Import Feature (NEW, ADDITIVE)
+// Import agents from n8n workflows or GitHub repos
+// ═══════════════════════════════════════════════════════════
+
+const { previewN8nWorkflow, executeN8nImport, checkN8nHealth } = require('./importers/n8nImporter');
+const { previewGitHubRepo, executeGitHubImport, checkAllowlist, ALLOWED_REPOS } = require('./importers/githubImporter');
+const importJobStore = require('./importers/importJobStore');
+
+/**
+ * GET /api/import/n8n/health
+ * Check if the n8n instance is reachable
+ */
+app.get('/api/import/n8n/health', async (req, res) => {
+  try {
+    const health = await checkN8nHealth();
+    res.json(health);
+  } catch (error) {
+    res.status(500).json({ reachable: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/import/n8n/preview
+ * Preview an n8n workflow before importing
+ * Body: { url: "http://localhost:5678/api/v1/workflows/1" }
+ */
+app.post('/api/import/n8n/preview', async (req, res) => {
+  const { url } = req.body;
+
+  if (!url || typeof url !== 'string') {
+    return res.status(400).json({ success: false, error: 'A valid n8n workflow URL is required.' });
+  }
+
+  try {
+    const preview = await previewN8nWorkflow(url);
+    res.json({ success: true, preview });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * POST /api/import/github/preview
+ * Preview a GitHub repo before importing
+ * Body: { url: "https://github.com/user/repo", branch: "main", path: "/" }
+ */
+app.post('/api/import/github/preview', async (req, res) => {
+  const { url, branch, path: subPath } = req.body;
+
+  if (!url || typeof url !== 'string') {
+    return res.status(400).json({ success: false, error: 'A valid GitHub repository URL is required.' });
+  }
+
+  try {
+    const preview = await previewGitHubRepo(url, branch, subPath);
+
+    // If not in allowlist, return the allowlist info
+    if (!preview.allowed) {
+      return res.status(403).json({
+        success: false,
+        error: preview.error,
+        allowedRepos: preview.allowedRepos,
+      });
+    }
+
+    res.json({ success: true, preview });
+  } catch (error) {
+    res.status(400).json({ success: false, error: error.message });
+  }
+});
+
+/**
+ * GET /api/import/github/allowlist
+ * Get the list of allowed GitHub repos for import
+ */
+app.get('/api/import/github/allowlist', (req, res) => {
+  res.json({
+    repos: ALLOWED_REPOS.map(r => ({
+      url: r.url,
+      label: r.label,
+      description: r.description,
+      language: r.language,
+    })),
+  });
+});
+
+/**
+ * POST /api/import/confirm
+ * Confirm and start an import job
+ * Body: { source_type: "n8n"|"github", source_url: "...", preview_data: {...} }
+ */
+app.post('/api/import/confirm', async (req, res) => {
+  const { source_type, source_url, preview_data } = req.body;
+
+  if (!source_type || !source_url || !preview_data) {
+    return res.status(400).json({
+      success: false,
+      error: 'source_type, source_url, and preview_data are required.',
+    });
+  }
+
+  if (!['n8n', 'github'].includes(source_type)) {
+    return res.status(400).json({ success: false, error: 'source_type must be "n8n" or "github".' });
+  }
+
+  // Create the import job
+  const job = importJobStore.createJob(source_type, source_url, preview_data);
+
+  console.log(`\n[Import] 📦 Created import job ${job.id} (${source_type}) — swarm_id: ${job.swarm_id}`);
+
+  // Start execution asynchronously (don't await — return immediately)
+  if (source_type === 'n8n') {
+    executeN8nImport(job, io, preview_data).catch(err => {
+      console.error(`[Import] n8n job ${job.id} error:`, err.message);
+      importJobStore.updateStatus(job.id, 'failed', err.message);
+    });
+  } else {
+    executeGitHubImport(job, io, preview_data).catch(err => {
+      console.error(`[Import] GitHub job ${job.id} error:`, err.message);
+      importJobStore.updateStatus(job.id, 'failed', err.message);
+    });
+  }
+
+  res.json({
+    success: true,
+    job: importJobStore.serialize(job),
+  });
+});
+
+/**
+ * GET /api/import/jobs
+ * List all import jobs
+ */
+app.get('/api/import/jobs', (req, res) => {
+  const jobs = importJobStore.listJobs().map(j => importJobStore.serialize(j));
+  res.json({ jobs });
+});
+
+/**
+ * GET /api/import/jobs/:id
+ * Get a specific import job
+ */
+app.get('/api/import/jobs/:id', (req, res) => {
+  const job = importJobStore.getJob(req.params.id);
+  if (!job) {
+    return res.status(404).json({ success: false, error: 'Job not found.' });
+  }
+  res.json({ success: true, job: importJobStore.serialize(job) });
+});
+
+/**
+ * POST /api/import/jobs/:id/stop
+ * Stop a running import job (kill switch)
+ */
+app.post('/api/import/jobs/:id/stop', (req, res) => {
+  const success = importJobStore.stopJob(req.params.id);
+  if (!success) {
+    return res.status(404).json({ success: false, error: 'Job not found.' });
+  }
+  console.log(`[Import] 🛑 Stopped import job ${req.params.id}`);
+  res.json({ success: true, message: 'Import job stopped.' });
+});
+
 // ── WebSocket ──
 
 io.on('connection', (socket) => {
@@ -342,6 +506,7 @@ server.listen(PORT, () => {
   console.log('  ║                                                   ║');
   console.log('  ║        🔴 Simulation Engine: ACTIVE               ║');
   console.log('  ║        🟢 AI Orchestrator:   READY                ║');
+  console.log('  ║        📦 Agent Importer:    READY                ║');
   console.log('  ║                                                   ║');
   console.log('  ╚═══════════════════════════════════════════════════╝');
   console.log('');

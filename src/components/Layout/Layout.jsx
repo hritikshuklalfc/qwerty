@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Package, Mail, Settings, HeadphonesIcon, Sparkles, Menu, X, Eye } from 'lucide-react';
+import { LayoutDashboard, Package, Mail, Settings, HeadphonesIcon, Sparkles, Menu, X, Eye, Download } from 'lucide-react';
 import { useSynapse } from '../../context/SynapseContext';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -59,6 +59,7 @@ const Layout = () => {
   const navItems = [
     { id: 'observatory', icon: Eye, path: '/app/observatory', label: 'Observatory' },
     { id: 'command-center', icon: Package, path: '/app/command-center', label: 'Command Center' },
+    { id: 'import', icon: Download, path: '/app/import', label: 'Import Agent' },
     { id: 'ai-builder', icon: Sparkles, path: '/app/ai-builder', label: 'AI Builder' },
     { id: 'settings', icon: Settings, path: '/app/settings', label: 'Settings' },
   ];

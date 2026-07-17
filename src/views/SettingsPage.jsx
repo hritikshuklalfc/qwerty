@@ -9,7 +9,7 @@ const SettingsPage = () => {
   const navigate = useNavigate();
   const { addToast } = useSynapse();
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
-  const [geminiApiKey, setGeminiApiKey] = useState(localStorage.getItem('geminiApiKey') || '');
+  const [geminiApiKey, setGeminiApiKey] = useState(localStorage.getItem('geminiApiKey') || import.meta.env.VITE_GEMINI_API_KEY || '');
   const [isSaving, setIsSaving] = useState(false);
 
   const saveApiKey = async () => {
