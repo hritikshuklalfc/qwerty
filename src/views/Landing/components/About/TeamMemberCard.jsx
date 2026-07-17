@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 
-export default function TeamMemberCard({ name, role, imageSrc }) {
+export default function TeamMemberCard({ name, role, imageSrc, linkedin }) {
   const [isHovered, setIsHovered] = useState(false);
   const [asciiArt, setAsciiArt] = useState('');
 
@@ -80,7 +80,12 @@ export default function TeamMemberCard({ name, role, imageSrc }) {
       >
         <h3 className="font-display font-medium text-text-primary text-lg mb-1">{name}</h3>
         <p className="text-text-tertiary text-sm mb-4">{role}</p>
-        <a href="#" className="text-text-tertiary hover:text-text-primary transition-colors inline-block w-fit font-display font-bold">
+        <a 
+          href={linkedin || "#"} 
+          target={linkedin ? "_blank" : undefined}
+          rel={linkedin ? "noopener noreferrer" : undefined}
+          className="text-text-tertiary hover:text-text-primary transition-colors inline-block w-fit font-display font-bold"
+        >
           [in]
         </a>
       </div>

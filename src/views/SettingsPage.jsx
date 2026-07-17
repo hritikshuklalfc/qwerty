@@ -2,16 +2,37 @@ import React, { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { LogOut, User, Shield, Database, Key } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useSynapse } from '../context/SynapseContext';
 
 const SettingsPage = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { addToast } = useSynapse();
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [geminiApiKey, setGeminiApiKey] = useState(localStorage.getItem('geminiApiKey') || '');
+  const [isSaving, setIsSaving] = useState(false);
 
-  const saveApiKey = () => {
-    localStorage.setItem('geminiApiKey', geminiApiKey);
-    // Could add a toast here instead of alert, but keeping it simple
+  const saveApiKey = async () => {
+    if (!geminiApiKey.trim()) {
+      localStorage.removeItem('geminiApiKey');
+      addToast('success', 'API Key Removed', 'API key removed successfully.');
+      return;
+    }
+
+    setIsSaving(true);
+    try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${geminiApiKey.trim()}`);
+      if (!response.ok) {
+        throw new Error('Invalid API Key');
+      }
+
+      localStorage.setItem('geminiApiKey', geminiApiKey.trim());
+      addToast('success', 'API Key Saved', 'your API KEY saved successfullly');
+    } catch (error) {
+      addToast('error', 'Validation Failed', 'The API Key provided is invalid. Please check and try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleLogout = async () => {
@@ -101,9 +122,10 @@ const SettingsPage = () => {
               />
               <button 
                 onClick={saveApiKey}
-                className="px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg text-sm font-bold transition-colors shadow-lg shadow-cyan-500/20"
+                disabled={isSaving}
+                className={`px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg text-sm font-bold transition-colors shadow-lg shadow-cyan-500/20 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                Save
+                {isSaving ? 'Saving...' : 'Save'}
               </button>
             </div>
             <p className="text-[11px] text-slate-500 mt-2">Your key is stored securely in your browser's local storage.</p>
