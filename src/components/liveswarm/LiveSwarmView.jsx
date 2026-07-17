@@ -12,7 +12,7 @@ import {
   Brain, Activity, AlertTriangle, DollarSign, Wifi, WifiOff, Zap,
   Cpu, Clock, Crosshair, RotateCcw, Radio, BarChart3,
   StopCircle, ShieldAlert, Wrench, PlayCircle, Skull, X, TrendingUp,
-  Shield, Eye, Loader2,
+  Shield, Eye, Loader2, Info,
 } from 'lucide-react';
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend,
@@ -774,7 +774,7 @@ function HrsInfoModal({ onClose }) {
 }
 
 // ── HRS Detection Panel ──
-function HrsDetectionPanel({ hrsScores, agents, agentKeys }) {
+function HrsDetectionPanel({ hrsScores, agents, agentKeys, onShowInfo }) {
   const scores = Object.values(hrsScores);
   if (scores.length === 0) return null;
 
@@ -912,7 +912,7 @@ export default function LiveSwarmView({ activeSwarmId, setLiveAgentCount }) {
         </div>
 
         {/* HRS Detection Panel */}
-        <HrsDetectionPanel hrsScores={hrsScores} agents={agents} agentKeys={agentKeys} />
+        <HrsDetectionPanel hrsScores={hrsScores} agents={agents} agentKeys={agentKeys} onShowInfo={() => setShowHrsInfo(true)} />
 
         {/* Swarm Topology */}
         {agentKeys.length > 0 && <SwarmTopology agents={agents} agentKeys={agentKeys} selectedAgent={selectedAgent} setSelectedAgent={setSelectedAgent} activeSwarmId={activeSwarmId} />}
