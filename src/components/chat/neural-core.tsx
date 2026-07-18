@@ -33,46 +33,50 @@ export function NeuralCore() {
   
   // Fetch conversations from Supabase
   useEffect(() => {
-    if (!user?.uid) return;
+    if (!user?.uid || !supabase) return;
     
     const fetchConversations = async () => {
-      const { data: convs, error: convError } = await supabase
-        .from('ai_conversations')
-        .select('*')
-        .eq('user_id', user.uid)
-        .order('updated_at', { ascending: false });
+      try {
+        const { data: convs, error: convError } = await supabase
+          .from('ai_conversations')
+          .select('*')
+          .eq('user_id', user.uid)
+          .order('updated_at', { ascending: false });
+          
+        if (convError) {
+          console.error("Failed to fetch conversations", convError);
+          return;
+        }
         
-      if (convError) {
-        console.error("Failed to fetch conversations", convError);
-        return;
-      }
-      
-      const { data: msgs, error: msgError } = await supabase
-        .from('ai_messages')
-        .select('*')
-        .order('created_at', { ascending: true });
+        const { data: msgs, error: msgError } = await supabase
+          .from('ai_messages')
+          .select('*')
+          .order('created_at', { ascending: true });
+          
+        if (msgError) {
+          console.error("Failed to fetch messages", msgError);
+          return;
+        }
         
-      if (msgError) {
-        console.error("Failed to fetch messages", msgError);
-        return;
+        const loadedConversations: Conversation[] = convs.map(c => ({
+          id: c.id,
+          title: c.title,
+          preview: c.preview || "",
+          date: new Date(c.updated_at).toLocaleDateString(),
+          messages: msgs
+            .filter(m => m.conversation_id === c.id)
+            .map(m => ({
+              id: m.id,
+              role: m.role,
+              content: m.content,
+              timestamp: new Date(m.created_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })
+            }))
+        }));
+        
+        setConversations(loadedConversations);
+      } catch (err) {
+        console.error("Error fetching conversations:", err);
       }
-      
-      const loadedConversations: Conversation[] = convs.map(c => ({
-        id: c.id,
-        title: c.title,
-        preview: c.preview || "",
-        date: new Date(c.updated_at).toLocaleDateString(),
-        messages: msgs
-          .filter(m => m.conversation_id === c.id)
-          .map(m => ({
-            id: m.id,
-            role: m.role,
-            content: m.content,
-            timestamp: new Date(m.created_at).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false })
-          }))
-      }));
-      
-      setConversations(loadedConversations);
     };
     
     fetchConversations();
@@ -98,46 +102,65 @@ export function NeuralCore() {
     
     // 1. Create conversation if none active
     if (!currentConvId) {
-      const { data: newConv, error: convErr } = await supabase
-        .from('ai_conversations')
-        .insert({
-          user_id: user.uid,
-          title: contentStr.substring(0, 30) + (contentStr.length > 30 ? '...' : ''),
-          preview: contentStr.substring(0, 50)
-        })
-        .select()
-        .single();
-        
-      if (convErr) {
-        console.error("Failed to create conversation", convErr);
-        return;
+      if (supabase) {
+        try {
+          const { data: newConv, error: convErr } = await supabase
+            .from('ai_conversations')
+            .insert({
+              user_id: user.uid,
+              title: contentStr.substring(0, 30) + (contentStr.length > 30 ? '...' : ''),
+              preview: contentStr.substring(0, 50)
+            })
+            .select()
+            .single();
+            
+          if (!convErr && newConv) {
+            currentConvId = newConv.id;
+          } else {
+            currentConvId = `conv-${Date.now()}`;
+          }
+        } catch (err) {
+          console.error("Supabase insert conversation failed", err);
+          currentConvId = `conv-${Date.now()}`;
+        }
+      } else {
+        currentConvId = `conv-${Date.now()}`;
       }
-      currentConvId = newConv.id;
       isNewConv = true;
     } else {
       // Update updated_at and preview
-      await supabase
-        .from('ai_conversations')
-        .update({
-          updated_at: new Date().toISOString(),
-          preview: contentStr.substring(0, 50)
-        })
-        .eq('id', currentConvId);
+      if (supabase) {
+        try {
+          await supabase
+            .from('ai_conversations')
+            .update({
+              updated_at: new Date().toISOString(),
+              preview: contentStr.substring(0, 50)
+            })
+            .eq('id', currentConvId);
+        } catch (err) {
+          console.error("Supabase update conversation failed", err);
+        }
+      }
     }
     
     // 2. Insert User Message
-    const { data: insertedUserMsg, error: userMsgErr } = await supabase
-      .from('ai_messages')
-      .insert({
-        conversation_id: currentConvId,
-        role: 'user',
-        content: contentStr
-      })
-      .select()
-      .single();
-      
-    if (userMsgErr) {
-      console.error("Failed to insert user message", userMsgErr);
+    let insertedUserMsg = null;
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('ai_messages')
+          .insert({
+            conversation_id: currentConvId,
+            role: 'user',
+            content: contentStr
+          })
+          .select()
+          .single();
+        if (!error) insertedUserMsg = data;
+      } catch (err) {
+        console.error("Supabase insert message failed", err);
+      }
     }
 
     const userMessage: Message = {
@@ -190,15 +213,23 @@ export function NeuralCore() {
       const aiResponseContent = `Workflow generated successfully! \n\n**To use this:**\n1. Copy the JSON block below.\n2. Navigate to the Orchestration Editor.\n3. Click anywhere on the canvas and press \`Ctrl+V\` (Paste) to import it!\n\n\`\`\`json\n${JSON.stringify(workflowConfig, null, 2)}\n\`\`\``;
       
       // 3. Insert AI Message
-      const { data: insertedAiMsg } = await supabase
-        .from('ai_messages')
-        .insert({
-          conversation_id: currentConvId,
-          role: 'assistant',
-          content: aiResponseContent
-        })
-        .select()
-        .single();
+      let insertedAiMsg = null;
+      if (supabase) {
+        try {
+          const { data } = await supabase
+            .from('ai_messages')
+            .insert({
+              conversation_id: currentConvId,
+              role: 'assistant',
+              content: aiResponseContent
+            })
+            .select()
+            .single();
+          insertedAiMsg = data;
+        } catch (err) {
+          console.error("Supabase AI message insert failed", err);
+        }
+      }
       
       const successMessage: Message = {
         id: insertedAiMsg?.id || `assistant-success-${Date.now()}`,
@@ -219,15 +250,24 @@ export function NeuralCore() {
     } catch (error) {
       // 4. Insert Error Message
       const aiErrorContent = `## Error\n\nFailed to generate workflow. Make sure your Gemini API Key is set in the Settings menu.\n\n${error.message}`;
-      const { data: insertedErrorMsg } = await supabase
-        .from('ai_messages')
-        .insert({
-          conversation_id: currentConvId,
-          role: 'assistant',
-          content: aiErrorContent
-        })
-        .select()
-        .single();
+      
+      let insertedErrorMsg = null;
+      if (supabase) {
+        try {
+          const { data } = await supabase
+            .from('ai_messages')
+            .insert({
+              conversation_id: currentConvId,
+              role: 'assistant',
+              content: aiErrorContent
+            })
+            .select()
+            .single();
+          insertedErrorMsg = data;
+        } catch (err) {
+          console.error("Supabase error message insert failed", err);
+        }
+      }
         
       const errorMessage: Message = {
         id: insertedErrorMsg?.id || `assistant-error-${Date.now()}`,
