@@ -55,25 +55,29 @@ export default function AboutBooking() {
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="bg-[#1c1c1e] text-white rounded-xl shadow-2xl p-6 md:p-8 overflow-hidden relative"
+            className="bg-[#1c1c1e] text-white rounded-xl shadow-2xl p-4 sm:p-6 md:p-8 overflow-hidden relative w-full max-w-sm sm:max-w-md md:max-w-none mx-auto"
           >
-            <div className="flex justify-between items-center mb-8">
-              <h3 className="font-display font-semibold">July <span className="text-white/60 font-normal">2026</span></h3>
-              <div className="flex gap-2">
+            <div className="flex justify-between items-center mb-6 sm:mb-8">
+              <h3 className="font-display font-semibold text-sm sm:text-base">July <span className="text-white/60 font-normal">2026</span></h3>
+              <div className="flex gap-1 sm:gap-2">
                 <button className="w-6 h-6 flex items-center justify-center rounded text-white/50 hover:bg-white/10 hover:text-white transition-colors">&lt;</button>
                 <button className="w-6 h-6 flex items-center justify-center rounded text-white/50 hover:bg-white/10 hover:text-white transition-colors">&gt;</button>
               </div>
             </div>
 
-            <div className="grid grid-cols-7 gap-y-4 mb-4">
-              {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(day => (
-                <div key={day} className="text-center text-[10px] font-semibold tracking-widest text-white/40">
-                  {day}
-                </div>
-              ))}
+            <div className="grid grid-cols-7 gap-y-4 mb-2 sm:mb-4">
+              {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map((day, index) => {
+                const shortDay = ['S', 'M', 'T', 'W', 'T', 'F', 'S'][index];
+                return (
+                  <div key={day} className="text-center text-[9px] sm:text-[10px] font-semibold tracking-widest text-white/40">
+                    <span className="hidden sm:inline">{day}</span>
+                    <span className="sm:hidden">{shortDay}</span>
+                  </div>
+                );
+              })}
             </div>
 
-            <div className="grid grid-cols-7 gap-y-2 text-sm">
+            <div className="grid grid-cols-7 gap-1 sm:gap-2 text-xs sm:text-sm">
               {/* Empty slots for start of month */}
               <div></div><div></div><div></div>
               
@@ -85,15 +89,15 @@ export default function AboutBooking() {
                 const isAvailable = [16, 20, 21, 22, 23, 24, 27, 28, 29, 30, 31].includes(date);
                 
                 return (
-                  <div key={date} className="flex justify-center py-2 relative group cursor-pointer">
+                  <div key={date} className="flex justify-center items-center aspect-square relative group cursor-pointer">
                     {isAvailable && !isSelected && (
-                      <div className="absolute inset-1 rounded bg-[#333336] opacity-0 group-hover:opacity-100 transition-opacity z-0"></div>
+                      <div className="absolute inset-0 sm:inset-1 rounded bg-[#333336] opacity-0 group-hover:opacity-100 transition-opacity z-0"></div>
                     )}
                     {isAvailable && !isSelected && (
-                      <div className="absolute inset-1 rounded bg-[#333336] z-0"></div>
+                      <div className="absolute inset-0 sm:inset-1 rounded bg-[#333336] z-0"></div>
                     )}
                     {isSelected && (
-                      <div className="absolute inset-1 rounded bg-white z-0"></div>
+                      <div className="absolute inset-0 sm:inset-1 rounded bg-white z-0"></div>
                     )}
                     <span className={`relative z-10 flex items-center justify-center w-full h-full ${isSelected ? 'text-black font-semibold' : (isAvailable ? 'text-white' : 'text-white/30')}`}>
                       {date}
@@ -107,7 +111,7 @@ export default function AboutBooking() {
             </div>
             
             {/* Overlay a blur on bottom to simulate scroll/more dates */}
-            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#1c1c1e] to-transparent pointer-events-none"></div>
+            <div className="absolute bottom-0 left-0 right-0 h-12 sm:h-16 bg-gradient-to-t from-[#1c1c1e] to-transparent pointer-events-none"></div>
           </motion.div>
         </div>
       </div>
