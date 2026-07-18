@@ -355,70 +355,38 @@ export default function Observatory() {
           </div>
           <div className="hidden sm:block w-px h-6 bg-black/10 dark:bg-white/10 shrink-0" />
 
-          <div className="flex items-center gap-2 flex-wrap">
-            {Object.entries(scenarios).map(([id, scenario]) => (
+          <div className="flex overflow-x-auto hide-scrollbar gap-2 max-w-[60vw]">
+            {Object.entries(combinedScenarios).map(([id, scenario]) => (
               <button
                 key={id}
                 onClick={() => handleRunScenario(id)}
-                disabled={!!scenarioRunning}
+                disabled={!!scenarioRunning && scenarioRunning !== id && !scenario.isImported}
                 className={`${styles.scenarioCard} ${
-                  scenarioRunning === id ? styles.scenarioCardActive : ''
-                } ${scenarioRunning && scenarioRunning !== id ? styles.scenarioCardDisabled : ''}`}
+                  activeSwarmId === id ? styles.scenarioCardActive : ''
+                } ${scenarioRunning && scenarioRunning !== id && !scenario.isImported ? styles.scenarioCardDisabled : ''}`}
               >
                 <span className="text-base">{scenario.icon}</span>
-                <span>{scenario.title}</span>
-                {scenarioRunning === id && (
-                  <div className="w-3 h-3 border-2 border-cyan-500 border-t-transparent animate-spin rounded-full" />
+                <span className="truncate max-w-[120px]">{scenario.title}</span>
+                {scenarioRunning === id && !scenario.isImported && (
+                  <div className="w-3 h-3 border-2 border-cyan-500 border-t-transparent animate-spin rounded-full shrink-0" />
                 )}
-                {!scenarioRunning && <Play size={12} className="opacity-40" />}
+                {(!scenarioRunning || scenario.isImported) && activeSwarmId !== id && <Play size={12} className="opacity-40 shrink-0" />}
+                {activeSwarmId === id && <Eye size={12} className="text-cyan-500 shrink-0" />}
               </button>
             ))}
-
-            {/* ── Custom Prompt Button (NEW) ── */}
-            <button
-              onClick={() => setShowCustomInput(!showCustomInput)}
-              disabled={!!scenarioRunning || engineMode !== 'ai'}
-              className={`${styles.scenarioCard} ${showCustomInput ? styles.scenarioCardActive : ''} ${engineMode !== 'ai' ? 'opacity-40 cursor-not-allowed' : ''}`}
-              title={engineMode !== 'ai' ? 'Switch to LIVE AI mode to use custom prompts' : 'Ask agents anything'}
-            >
-              <Sparkles size={14} className="text-amber-400" />
-              <span>Custom</span>
-            </button>
           </div>
-        </div>
-        <div className="w-px h-6 bg-black/10 dark:bg-white/10" />
 
-        <div className="flex overflow-x-auto hide-scrollbar gap-2 max-w-[60vw]">
-          {Object.entries(combinedScenarios).map(([id, scenario]) => (
-            <button
-              key={id}
-              onClick={() => handleRunScenario(id)}
-              disabled={!!scenarioRunning && scenarioRunning !== id && !scenario.isImported}
-              className={`${styles.scenarioCard} ${
-                activeSwarmId === id ? styles.scenarioCardActive : ''
-              } ${scenarioRunning && scenarioRunning !== id && !scenario.isImported ? styles.scenarioCardDisabled : ''}`}
-            >
-              <span className="text-base">{scenario.icon}</span>
-              <span className="truncate max-w-[120px]">{scenario.title}</span>
-              {scenarioRunning === id && !scenario.isImported && (
-                <div className="w-3 h-3 border-2 border-cyan-500 border-t-transparent animate-spin rounded-full shrink-0" />
-              )}
-              {(!scenarioRunning || scenario.isImported) && activeSwarmId !== id && <Play size={12} className="opacity-40 shrink-0" />}
-              {activeSwarmId === id && <Eye size={12} className="text-cyan-500 shrink-0" />}
-            </button>
-          ))}
+          {/* ── Custom Prompt Button (NEW) ── */}
+          <button
+            onClick={() => setShowCustomInput(!showCustomInput)}
+            disabled={!!scenarioRunning || engineMode !== 'ai'}
+            className={`${styles.scenarioCard} ${showCustomInput ? styles.scenarioCardActive : ''} ${engineMode !== 'ai' ? 'opacity-40 cursor-not-allowed' : ''}`}
+            title={engineMode !== 'ai' ? 'Switch to LIVE AI mode to use custom prompts' : 'Ask agents anything'}
+          >
+            <Sparkles size={14} className="text-amber-400" />
+            <span>Custom</span>
+          </button>
         </div>
-
-        {/* ── Custom Prompt Button (NEW) ── */}
-        <button
-          onClick={() => setShowCustomInput(!showCustomInput)}
-          disabled={!!scenarioRunning || engineMode !== 'ai'}
-          className={`${styles.scenarioCard} ${showCustomInput ? styles.scenarioCardActive : ''} ${engineMode !== 'ai' ? 'opacity-40 cursor-not-allowed' : ''}`}
-          title={engineMode !== 'ai' ? 'Switch to LIVE AI mode to use custom prompts' : 'Ask agents anything'}
-        >
-          <Sparkles size={14} className="text-amber-400" />
-          <span>Custom</span>
-        </button>
 
         {/* ── Right Section: Engine Mode Toggle + Status ── */}
         <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap ml-auto justify-end shrink-0">
