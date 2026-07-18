@@ -24,7 +24,6 @@ export default function Footer() {
             <Link 
               to="/" 
               className="flex items-center gap-2 mb-6"
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             >
               <img src="/images/haqe2hzki2muozdla5wph5icqe.svg" alt="Synapse OS" className="w-8 h-8" />
               <span className="font-display font-semibold text-2xl tracking-tight">Synapse OS</span>
@@ -41,7 +40,6 @@ export default function Footer() {
                 <li key={link.name}>
                   <Link 
                     to={link.path}
-                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                     className="text-text-secondary hover:text-primary transition-colors"
                   >
                     {link.name}
@@ -58,7 +56,6 @@ export default function Footer() {
                 <li key={link.name}>
                   <Link 
                     to={link.path}
-                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                     className="text-text-secondary hover:text-primary transition-colors"
                   >
                     {link.name}
