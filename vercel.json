@@ -4,6 +4,10 @@
     {
       "source": "/n8n/:path*",
       "destination": "https://synapse-os-server-production.up.railway.app/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
