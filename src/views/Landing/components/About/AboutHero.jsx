@@ -29,12 +29,12 @@ export default function AboutHero() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
         >
-          <Link 
-            to="#booking"
+          <a 
+            href="mailto:hello@synapse.io?subject=Booking Inquiry for Technical Assessment&body=Hello,%0D%0A%0D%0AI'm interested in booking a technical assessment.%0D%0APlease let me know if any of the following dates and times work for a discussion:%0D%0A%0D%0ADate 1: [Select Date]%0D%0ATime 1: [Select Time]%0D%0A%0D%0ADate 2: [Select Date]%0D%0ATime 2: [Select Time]%0D%0A%0D%0ALooking forward to hearing from you.%0D%0A%0D%0ABest,%0D%0A[Your Name]"
             className="inline-flex px-8 py-3 rounded-full bg-text-primary text-white text-sm font-medium hover:bg-text-secondary transition-colors"
           >
             Book now
-          </Link>
+          </a>
         </motion.div>
       </div>
     </section>
